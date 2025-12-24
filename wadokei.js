@@ -41,10 +41,10 @@ window.Wadokei = {
   backplane: {}
 };
 
-const canvas = document.getElementById("clock");
-const ctx = canvas.getContext("2d");
-const radius = canvas.width / 2;
-ctx.translate(radius, radius);
+// const canvas = document.getElementById("clock");
+// const ctx = canvas.getContext("2d");
+// const radius = canvas.width / 2;
+// ctx.translate(radius, radius);
 
 function ComputeSunData(date) {
   const { lat, lon } = Wadokei.config;
@@ -71,6 +71,9 @@ configPromise.then(InitWadokei);
 
 function drawDial(labels, startAngle, totalAngle) {
   let step = totalAngle / labels.length;
+  const ctx = Wadokei.ctx;
+  const radius = Wadokei.radius;
+
   ctx.save();
   try {
     ctx.font = "20pt 'Yu Mincho', serif";
@@ -91,6 +94,9 @@ function drawDial(labels, startAngle, totalAngle) {
 
 function drawNumbers(labels, startAngle, totalAngle, innerRadius) {
   let step = totalAngle / labels.length;
+  const ctx = Wadokei.ctx;
+  const radius = Wadokei.radius;
+
   ctx.save();
   try {
     ctx.font = "16pt 'Yu Mincho', serif";
@@ -111,6 +117,9 @@ function drawNumbers(labels, startAngle, totalAngle, innerRadius) {
 
 function drawTicks(startAngle, totalAngle, divisions, innerRadius, outerRadius) {
   let step = totalAngle / divisions;
+  const ctx = Wadokei.ctx;
+  const radius = Wadokei.radius;
+
   ctx.save();
   try {
     ctx.strokeStyle = "#555";
@@ -137,6 +146,7 @@ function drawHand(angle, length, opt = {}) {
     offsetX = 0,
     offsetY = 0,
     tickShift = 0 } = opt;
+  const ctx = Wadokei.ctx;
 
   const acctualAngle = angle + tickShift;
 
@@ -224,11 +234,18 @@ function drawClock(ctx, canvas, radius) {
   const { dialMode, calMode, lat, lon } = Wadokei.config;
   const { sunrise, sunset, Lday, trueNoon } = Wadokei.sun;
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // 座標系リセット
   ctx.globalAlpha = 1.0;             // ← これが超重要
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.translate(canvas.width / 2, canvas.height / 2);
+  // 座標系リセット
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // scale を戻す
+  ctx.scale(2, 2);
+
+  // 中央へ移動
+  ctx.translate(Wadokei.radius, Wadokei.radius);
+
+  // ctx.translate(canvas.width / 2, canvas.height / 2);
 
   // 昼夜長の計算
 
@@ -365,12 +382,19 @@ function startWadokei() {
   // 座標系をスケール
   ctx.scale(2, 2);
 
-  // 半径を再計算
-  const radius = displaySize / 2;
+  // // 半径を再計算
+  // const radius = displaySize / 2;
+  // ctx.translate(radius, radius);
 
-  ctx.save();
-  ctx.translate(radius, radius);
-  ctx.restore();
+  // ★ ここでグローバル共有
+  Wadokei.canvas = canvas;
+  Wadokei.ctx = ctx;
+  Wadokei.radius = displaySize / 2;
+
+
+  // ctx.save();
+  // ctx.translate(radius, radius);
+  // ctx.restore();
 
   // 表示用DOM
   const $datetime = document.getElementById('datetime');
@@ -406,7 +430,7 @@ function startWadokei() {
       Wadokei.state.lastSunCalcDate = today;
     }
 
-    drawClock(ctx, canvas, radius, config.dialMode); // 務さんの既存関数に合わせて呼び出し
+    drawClock(ctx, canvas, Wadokei.radius, config.dialMode); // 務さんの既存関数に合わせて呼び出し
 
     // 情報パネル更新
     $datetime.textContent = formatDateTime(nowTime);

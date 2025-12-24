@@ -83,6 +83,7 @@ function drawDialWithAngles(angleMap, r) {
 }
 
 function drawTextAtAngle(text, angle, r) {
+    const ctx = Wadokei.ctx;
     ctx.save();
     try {
         ctx.rotate(angle);
@@ -99,6 +100,7 @@ function drawTextAtAngle(text, angle, r) {
 
 // 漢数字（四〜九）を角度位置に描く
 function drawNumberAtAngle(text, angle, r) {
+    const ctx = Wadokei.ctx;
     ctx.save();
     try {
         ctx.rotate(angle);
@@ -115,6 +117,7 @@ function drawNumberAtAngle(text, angle, r) {
 
 // 刻線（tick）を角度位置に描く
 function drawTickAtAngle(angle, r1, r2) {
+    const ctx = Wadokei.ctx;
     ctx.save();
     try {
         ctx.rotate(angle);
