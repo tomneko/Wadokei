@@ -28,6 +28,12 @@ function InitDrawHand(config) {
     Wadokei.hand.image = img;
     Wadokei.hand.loaded = true;
     console.log("Hand image loaded");
+    Wadokei.hand.img.width = img.width;
+    Wadokei.hand.img.height = img.height;
+    console.log(`Hand image size: ${img.width} x ${img.height} pixels`);
+    const canvasSize = canvas.clientWidth; // CSSで決まった表示サイズ
+    Wadokei.hand.scale = canvasSize / Math.max(img.width, img.height);
+    console.log(`Recommended scale factor: ${Wadokei.hand.scale.toFixed(3)}`);
   };
 }
 
@@ -35,12 +41,12 @@ configPromise.then(InitDrawHand);
 
 function drawHand(angle, length, opt = {}) {
   const {
-    scale = 0.4,     // 針の大きさ調整
+    // scale = 0.4,     // 針の大きさ調整
     offsetX = 0,     // 中心補正（横）
     offsetY = 0,      // 中心補正（縦）
     tickShift = 0    // 刻線補正（未使用）
   } = opt;
-
+  const scale = Wadokei.hand.scale || 0.4;
   if (!Wadokei.hand.loaded) return;
   const handImage = Wadokei.hand.image;
 
