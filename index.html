@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <title>江戸和時計（不定時法）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <style>
+    body {
+      font-family: system-ui, "Yu Mincho", serif;
+      margin: 0;
+      background: #f6f3ee;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto 16px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 8px 0;
+    }
+
+    .label {
+      color: #6b4b2b;
+    }
+
+    .value {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <canvas id="clock" width="600" height="600"></canvas>
+
+    <section class="panel" aria-label="データ表示">
+      <div class="row">
+        <div class="label">年月日・時刻</div>
+        <div id="datetime" class="value">—</div>
+      </div>
+      <div class="row">
+        <div class="label">24節気</div>
+        <div id="sekki" class="value">—</div>
+      </div>
+      <div class="row">
+        <div class="label">タイムゾーン</div>
+        <div id="timezone" class="value">—</div>
+      </div>
+    </section>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+  <script src="config-loader.js"></script>
+  <script src="24terms.js"></script>
+  <script src="wadokei.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,66 @@
+// terms.js
+// 近似テーブル（JST基準、年により前後することがあります）
+const SEKki_ORDER = [
+  { index: 1,  name: '立春',   month: 2,  day: 4 },
+  { index: 2,  name: '雨水',   month: 2,  day: 19 },
+  { index: 3,  name: '啓蟄',   month: 3,  day: 6 },
+  { index: 4,  name: '春分',   month: 3,  day: 20 },
+  { index: 5,  name: '清明',   month: 4,  day: 5 },
+  { index: 6,  name: '穀雨',   month: 4,  day: 20 },
+  { index: 7,  name: '立夏',   month: 5,  day: 5 },
+  { index: 8,  name: '小満',   month: 5,  day: 21 },
+  { index: 9,  name: '芒種',   month: 6,  day: 6 },
+  { index:10,  name: '夏至',   month: 6,  day: 21 },
+  { index:11,  name: '小暑',   month: 7,  day: 7 },
+  { index:12,  name: '大暑',   month: 7,  day: 23 },
+  { index:13,  name: '立秋',   month: 8,  day: 8 },
+  { index:14,  name: '処暑',   month: 8,  day: 23 },
+  { index:15,  name: '白露',   month: 9,  day: 8 },
+  { index:16,  name: '秋分',   month: 9,  day: 23 },
+  { index:17,  name: '寒露',   month: 10, day: 8 },
+  { index:18,  name: '霜降',   month: 10, day: 23 },
+  { index:19,  name: '立冬',   month: 11, day: 7 },
+  { index:20,  name: '小雪',   month: 11, day: 22 },
+  { index:21,  name: '大雪',   month: 12, day: 7 },
+  { index:22,  name: '冬至',   month: 12, day: 22 },
+  { index:23,  name: '小寒',   month: 1,  day: 6 },
+  { index:24,  name: '大寒',   month: 1,  day: 20 }
+];
+
+// ユーティリティ
+function makeDate(year, month, day) {
+  // month は 1-12 を想定
+  return new Date(year, month - 1, day, 0, 0, 0);
+}
+
+// その年の節気日付列（年跨ぎに対応: 小寒・大寒は翌年正月扱い）
+function buildYearTable(year){
+  // 小寒・大寒（index 23,24）は年頭扱いなので year+1 側で生成
+  const table = SEKki_ORDER.map(t => {
+    const y = (t.index >= 23) ? year + 1 : year;
+    return { index: t.index, name: t.name, date: makeDate(y, t.month, t.day) };
+  }).sort((a,b)=>a.date - b.date);
+  return table;
+}
+
+// 現在の節気を返す（近似）
+function getSekki(now){
+  const year = now.getFullYear();
+  const table = buildYearTable(year);
+  // 区間判定: table[i] ≤ now < table[i+1]
+  for (let i=0; i<table.length; i++){
+    const cur = table[i];
+    const next = table[(i+1) % table.length]; // 周回
+    const start = cur.date;
+    const end = next.date;
+    if (start <= now && now < end){
+      return { index: cur.index, name: cur.name, start, end };
+    }
+  }
+  // フォールバック
+  const last = table[table.length - 1];
+  return { index: last.index, name: last.name, start: last.date, end: table[0].date };
+}
+
+// グローバル公開
+window.getSekki = getSekki;

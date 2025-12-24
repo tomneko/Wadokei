@@ -1,0 +1,19 @@
+{
+    "lat": 35.685175,
+    "lon": 139.752799,
+    "dialMode": "午上",
+    "calMode": "宣明暦",
+    "handPlugin": "plugin.drawHand.yaesakura.js",
+    "backplanePlugin": "plugin.drawBackplane.js",
+    "calendarPlugin": "default",
+    "font": {
+        "zodiac": "20pt 'Yu Mincho', serif",
+        "numbers": "16pt 'Yu Mincho', serif",
+        "colorZodiac": "#5c3317",
+        "colorNumbers": "#333"
+    },
+    "backgroundImage": "brass_backpanel.webp",
+    "dayColor": "rgba(255, 248, 220, 0.6)",
+    "nightColor": "rgba(230, 240, 255, 0.6)",
+    "handImage": "yaesakura.webp"
+}
