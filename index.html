@@ -27,6 +27,13 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
     }
 
+    #clock {
+      width: 100%;
+      height: auto;
+      max-width: 600px;
+      /* PC では大きく、モバイルでは縮む */
+    }
+
     .panel {
       background: #fff;
       border-radius: 12px;
@@ -54,7 +61,7 @@
 
 <body>
   <div class="wrap">
-    <canvas id="clock" width="600" height="600"></canvas>
+    <canvas id="clock"></canvas>
 
     <section class="panel" aria-label="データ表示">
       <div class="row">

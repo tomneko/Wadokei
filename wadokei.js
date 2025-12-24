@@ -21,6 +21,7 @@
  *   Wadokei.sun     - 天文データ（sunrise, sunset, Lday, trueNoon）
  *   Wadokei.state   - 描画状態（現在時刻など）
  *   Wadokei.hand    - 針プラグインが使用する画像・ロード状態
+ *   Wadokei.backplane - 盤面プラグインが使用する画像・ロード状態
  *
  * 注意:
  *   - SunCalc の計算は InitWadokei 内で初期化される。
@@ -350,9 +351,23 @@ function startWadokei() {
   // ※ draw() はここでは呼ばない
   // ※ setInterval もここでは呼ばない
 
+  // Canvas 初期化
   const canvas = document.getElementById('clock');
   const ctx = canvas.getContext('2d');
-  const radius = canvas.width / 2;
+
+  // CSS の表示サイズを取得
+  const displaySize = canvas.clientWidth;
+
+  // 内部解像度を合わせる（高精細）
+  canvas.width = displaySize * 2;
+  canvas.height = displaySize * 2;
+
+  // 座標系をスケール
+  ctx.scale(2, 2);
+
+  // 半径を再計算
+  const radius = displaySize / 2;
+
   ctx.save();
   ctx.translate(radius, radius);
   ctx.restore();
