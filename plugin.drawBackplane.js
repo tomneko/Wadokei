@@ -352,10 +352,9 @@ function drawBackplane(ctx, radius) {
             "卯", "辰", "巳", "午", "未", "申",
             "酉", "戌", "亥", "子", "丑", "寅"
         ];
-        const clockNumbers = [
-            "四", "五", "六", "七", "八", "九",
-            "四", "五", "六", "七", "八", "九"
-        ];
+        const clockNumbers = [ 
+            “六”, “五”, “四”, “九”, “八”, “七”, 
+            “六”, “五”, “四”, “九”, “八”, “七” ];
 
         for (let i = 0; i < 12; i++) {
             const z = zodiacOrder[i];
