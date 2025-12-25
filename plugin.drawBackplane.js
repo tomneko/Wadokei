@@ -32,11 +32,28 @@
 function InitDrawBackplane(config) {
     const img = new Image();
     img.src = config.backgroundImage || "brass_backpanel.webp";
-
     img.onload = () => {
         Wadokei.backplane.image = img;
         Wadokei.backplane.loaded = true;
         console.log("Backplane image loaded");
+    };
+    Wadokei.backplane.layout = {
+        // 刻線の内外位置（radius からの距離）
+        tickOuter: 60,
+        tickInner: 20,
+
+        // 干支の文字設定
+        zodiacFontSize: 20,
+        zodiacRadiusOffset: 40,
+        zodiacFontFamily: "'Yu Mincho', serif",
+        zodiacColor: "#5c3317",
+
+        // 漢数字（四〜九）の文字設定
+        numberFontSize: 16,
+        numberRadiusOffset: 80,
+        numberFontFamily: "'Yu Mincho', serif",
+        numberColor: "#333"
+
     };
 }
 
@@ -82,14 +99,17 @@ function drawDialWithAngles(angleMap, r) {
     }
 }
 
-function drawTextAtAngle(text, angle, r) {
+function drawTextAtAngle(text, angle, baseR) {
     const ctx = Wadokei.ctx;
+    const layout = Wadokei.backplane.layout;
+    const r = baseR - layout.zodiacRadiusOffset * Wadokei.uiScale;
+
     ctx.save();
     try {
         ctx.rotate(angle);
         ctx.translate(0, -r);
-        ctx.font = "20pt 'Yu Mincho', serif";
-        ctx.fillStyle = "#5c3317";
+        ctx.font = `${layout.zodiacFontSize * Wadokei.uiScale}px ${layout.zodiacFontFamily}`;
+        ctx.fillStyle = layout.zodiacColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, 0, 0);
@@ -99,14 +119,17 @@ function drawTextAtAngle(text, angle, r) {
 }
 
 // 漢数字（四〜九）を角度位置に描く
-function drawNumberAtAngle(text, angle, r) {
+function drawNumberAtAngle(text, angle, baseR) {
     const ctx = Wadokei.ctx;
+    const layout = Wadokei.backplane.layout;
+    const r = baseR - layout.numberRadiusOffset * Wadokei.uiScale;
+
     ctx.save();
     try {
         ctx.rotate(angle);
         ctx.translate(0, -r);
-        ctx.font = "16pt 'Yu Mincho', serif";
-        ctx.fillStyle = "#333";
+        ctx.font = `${layout.numberFontSize * Wadokei.uiScale}px ${layout.numberFontFamily}`;
+        ctx.fillStyle = layout.numberColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, 0, 0);
@@ -347,7 +370,7 @@ function drawBackplane(ctx, radius) {
 
         // 干支
         for (const z in angle) {
-            drawTextAtAngle(z, angle[z], radius - 40);
+            drawTextAtAngle(z, angle[z], radius);
         }
 
         // 漢数字
@@ -362,13 +385,17 @@ function drawBackplane(ctx, radius) {
 
         for (let i = 0; i < 12; i++) {
             const z = zodiacOrder[i];
-            drawNumberAtAngle(clockNumbers[i], angle[z], radius - 80);
+            drawNumberAtAngle(clockNumbers[i], angle[z], radius);
         }
 
         // 刻線
         for (const a of angleTick) {
-            drawTickAtAngle(a, radius - 60, radius - 20);
+            drawTickAtAngle(a,
+                radius - Wadokei.backplane.layout.tickOuter * Wadokei.uiScale,
+                radius - Wadokei.backplane.layout.tickInner * Wadokei.uiScale
+            );
         }
+
 
         // 中央の丸
         ctx.save();

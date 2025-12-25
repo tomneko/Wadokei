@@ -417,9 +417,45 @@ function startWadokei() {
     return `${y}/${m}/${day} (${wnames[d.getDay()]}) ${hh}:${mm}:${ss}`;
   }
 
+  // UIスケール設定
+  const scaleMap = [
+    { w: 300, s: 0.65 },
+    { w: 325, s: 0.70 },
+    { w: 350, s: 0.75 },
+    { w: 375, s: 0.80 },
+    { w: 400, s: 0.85 },
+    { w: 425, s: 0.88 },
+    { w: 450, s: 0.90 },
+    { w: 475, s: 0.92 },
+    { w: 500, s: 0.94 },
+    { w: 525, s: 0.96 },
+    { w: 550, s: 0.98 },
+    { w: 600, s: 1.00 }
+  ];
+
+  // 幅に応じたスケール決定
+  function uiScaleFromWidth(w) {
+    let chosen = scaleMap[0].s;
+    for (const item of scaleMap) {
+      if (w >= item.w) {
+        chosen = item.s;
+      }
+    }
+    return chosen;
+  }
+
   // 和時計の描画（務さんのロジックを利用）
   function draw() {
     const { sunrise, sunset } = Wadokei.sun;
+
+    const canvas = Wadokei.canvas;
+    const w = canvas.clientWidth;
+
+    if (Wadokei.lastCanvasWidth !== w) {
+      Wadokei.lastCanvasWidth = w;
+      Wadokei.uiScale = uiScaleFromWidth(w);
+    }
+    console.log(`UI Scale: ${Wadokei.uiScale}`);
 
     // 日の出・日の入り再計算（1日1回実行）
     const nowTime = new Date();
