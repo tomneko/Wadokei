@@ -235,6 +235,20 @@ function drawClock() {
   const { sunrise, sunset, Lday, trueNoon } = Wadokei.sun;
   const ctx = Wadokei.ctx;
   const radius = Wadokei.radius;
+  const canvas = Wadokei.canvas;
+
+  // 座標系リセット
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 座標系をスケール
+  ctx.scale(2, 2);
+
+  // 中央へ移動
+  ctx.translate(Wadokei.radius, Wadokei.radius);
+
+  // 透明度リセット
+  ctx.globalAlpha = 1.0;
 
   // 昼夜長の計算
   let dayLength = sunset - sunrise;
@@ -337,19 +351,6 @@ function initCanvas() {
   // 内部解像度を合わせる（高精細）
   canvas.width = displaySize * 2;
   canvas.height = displaySize * 2;
-
-  // 座標系リセット
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 座標系をスケール
-  ctx.scale(2, 2);
-
-  // 中央へ移動
-  ctx.translate(Wadokei.radius, Wadokei.radius);
-
-  // 透明度リセット
-  ctx.globalAlpha = 1.0;
 
   // ★ ここでグローバル共有
   Wadokei.canvas = canvas;
