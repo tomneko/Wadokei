@@ -230,25 +230,13 @@ function drawBackplane(ctx, radius, opt) {
   return { shift: 0 }; // ダミー
 }
 
-function drawClock(ctx, canvas, radius) {
+function drawClock() {
   const { dialMode, calMode, lat, lon } = Wadokei.config;
   const { sunrise, sunset, Lday, trueNoon } = Wadokei.sun;
-
-  ctx.globalAlpha = 1.0;             // ← これが超重要
-
-  // 座標系リセット
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // scale を戻す
-  ctx.scale(2, 2);
-
-  // 中央へ移動
-  ctx.translate(Wadokei.radius, Wadokei.radius);
-
-  // ctx.translate(canvas.width / 2, canvas.height / 2);
+  const ctx = Wadokei.ctx;
+  const radius = Wadokei.radius;
 
   // 昼夜長の計算
-
   let dayLength = sunset - sunrise;
   let nightLength = (sunrise + 24 * 3600 * 1000) - sunset;
 
@@ -337,8 +325,104 @@ function getSunTimes(date, lat, lon) {
   };
 }
 
+// Canvas 初期化
+function initCanvas() {
+  // Canvas 初期化
+  const canvas = document.getElementById('clock');
+  const ctx = canvas.getContext('2d');
+
+  // CSS の表示サイズを取得
+  const displaySize = canvas.clientWidth;
+
+  // 内部解像度を合わせる（高精細）
+  canvas.width = displaySize * 2;
+  canvas.height = displaySize * 2;
+
+  // 座標系リセット
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 座標系をスケール
+  ctx.scale(2, 2);
+
+  // 中央へ移動
+  ctx.translate(Wadokei.radius, Wadokei.radius);
+
+  // 透明度リセット
+  ctx.globalAlpha = 1.0;
+
+  // ★ ここでグローバル共有
+  Wadokei.canvas = canvas;
+  Wadokei.ctx = ctx;
+  Wadokei.radius = displaySize / 2;
+}
+
+// UIスケール設定
+const scaleMap = [
+  { w: 300, s: 0.65 },
+  { w: 325, s: 0.70 },
+  { w: 350, s: 0.75 },
+  { w: 375, s: 0.80 },
+  { w: 400, s: 0.85 },
+  { w: 425, s: 0.88 },
+  { w: 450, s: 0.90 },
+  { w: 475, s: 0.92 },
+  { w: 500, s: 0.94 },
+  { w: 525, s: 0.96 },
+  { w: 550, s: 0.98 },
+  { w: 600, s: 1.00 }
+];
+
+// 幅に応じたスケール決定
+function uiScaleFromWidth(w) {
+  let chosen = scaleMap[0].s;
+  for (const item of scaleMap) {
+    if (w >= item.w) {
+      chosen = item.s;
+    }
+  }
+  return chosen;
+}
+
+// 和時計の描画（務さんのロジックを利用）
+function draw() {
+  const beforeWidth = Wadokei.canvas.clientWidth;
+
+  if (Wadokei.lastCanvasWidth !== beforeWidth) {
+    initCanvas();
+    const afterWidth = Wadokei.canvas.clientWidth;
+    Wadokei.lastCanvasWidth = afterWidth;
+    Wadokei.uiScale = uiScaleFromWidth(afterWidth);
+  }
+  console.log(`UI Scale: ${Wadokei.uiScale}`);
+
+  // 日の出・日の入り再計算（1日1回実行）
+  const nowTime = new Date();
+  const today = nowTime.toDateString();
+
+  if (Wadokei.state.lastSunCalcDate !== today) {
+    ComputeSunData(nowTime);
+    Wadokei.state.lastSunCalcDate = today;
+  }
+
+  // 描画処理引数は全てWadokeiから取得
+  drawClock();
+
+  // 情報パネル更新
+  drawInfoPanel(nowTime);
+}
+
+// 描画ループ開始
+function startClockLoop() {
+  draw();
+  setInterval(draw, 1000);
+}
+
 // メイン関数
 function startWadokei() {
+
+  // Canvas 初期化
+  initCanvas();
 
   // プラグイン読み込み（Promise を返す）
   const pluginNames = [
@@ -356,45 +440,14 @@ function startWadokei() {
 
   // ここから先は「プラグイン読み込み後」に実行したい処理
   pluginLoads.then(results => {
-    console.log("プラグイン読み込み結果:", results);
-
-    // 初回描画
-    draw();
-
-    // 1秒ごとに更新
-    setInterval(draw, 1000);
+    // Clockループ開始
+    startClockLoop();
   });
+}
 
-  // ※ draw() はここでは呼ばない
-  // ※ setInterval もここでは呼ばない
-
-  // Canvas 初期化
-  const canvas = document.getElementById('clock');
-  const ctx = canvas.getContext('2d');
-
-  // CSS の表示サイズを取得
-  const displaySize = canvas.clientWidth;
-
-  // 内部解像度を合わせる（高精細）
-  canvas.width = displaySize * 2;
-  canvas.height = displaySize * 2;
-
-  // 座標系をスケール
-  ctx.scale(2, 2);
-
-  // // 半径を再計算
-  // const radius = displaySize / 2;
-  // ctx.translate(radius, radius);
-
-  // ★ ここでグローバル共有
-  Wadokei.canvas = canvas;
-  Wadokei.ctx = ctx;
-  Wadokei.radius = displaySize / 2;
-
-
-  // ctx.save();
-  // ctx.translate(radius, radius);
-  // ctx.restore();
+// 情報パネル描画
+function drawInfoPanel(nowTime) {
+  const { sunrise, sunset } = Wadokei.sun;
 
   // 表示用DOM
   const $datetime = document.getElementById('datetime');
@@ -405,89 +458,19 @@ function startWadokei() {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   $timezone.textContent = tz;
 
-  // 24時間制の日時フォーマット（JST）
-  function formatDateTime(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mm = String(d.getMinutes()).padStart(2, '0');
-    const ss = String(d.getSeconds()).padStart(2, '0');
-    const wnames = ['日', '月', '火', '水', '木', '金', '土'];
-    return `${y}/${m}/${day} (${wnames[d.getDay()]}) ${hh}:${mm}:${ss}`;
-  }
+  // 現在日時 
+  $datetime.textContent = formatDateTime(nowTime);
 
-  // UIスケール設定
-  const scaleMap = [
-    { w: 300, s: 0.65 },
-    { w: 325, s: 0.70 },
-    { w: 350, s: 0.75 },
-    { w: 375, s: 0.80 },
-    { w: 400, s: 0.85 },
-    { w: 425, s: 0.88 },
-    { w: 450, s: 0.90 },
-    { w: 475, s: 0.92 },
-    { w: 500, s: 0.94 },
-    { w: 525, s: 0.96 },
-    { w: 550, s: 0.98 },
-    { w: 600, s: 1.00 }
-  ];
+  // 日の出・日の入り時刻
+  const sunriseStr = formatTime(new Date(sunrise));
+  const sunsetStr = formatTime(new Date(sunset));
 
-  // 幅に応じたスケール決定
-  function uiScaleFromWidth(w) {
-    let chosen = scaleMap[0].s;
-    for (const item of scaleMap) {
-      if (w >= item.w) {
-        chosen = item.s;
-      }
-    }
-    return chosen;
-  }
-
-  // 和時計の描画（務さんのロジックを利用）
-  function draw() {
-    const { sunrise, sunset } = Wadokei.sun;
-
-    const canvas = Wadokei.canvas;
-    const w = canvas.clientWidth;
-
-    if (Wadokei.lastCanvasWidth !== w) {
-      Wadokei.lastCanvasWidth = w;
-      Wadokei.uiScale = uiScaleFromWidth(w);
-    }
-    console.log(`UI Scale: ${Wadokei.uiScale}`);
-
-    // 日の出・日の入り再計算（1日1回実行）
-    const nowTime = new Date();
-    const today = nowTime.toDateString();
-
-    if (Wadokei.state.lastSunCalcDate !== today) {
-      ComputeSunData(nowTime);
-      Wadokei.state.lastSunCalcDate = today;
-    }
-
-    drawClock(ctx, canvas, Wadokei.radius, config.dialMode); // 務さんの既存関数に合わせて呼び出し
-
-    // 情報パネル更新
-    $datetime.textContent = formatDateTime(nowTime);
-
-    // 時刻を「HH:MM」形式に整形
-    function formatTime(date) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // 日の出・日の入り時刻
-    const sunriseStr = formatTime(new Date(sunrise));
-    const sunsetStr = formatTime(new Date(sunset));
-
-    // 24節気判定（terms.js の getSekki を使用）
-    const sekki = getSekki(nowTime);
-    // 例: { index: 4, name: '春分', next: Date }
-    $sekki.textContent = `第${sekki.index}節 ${sekki.name}`;
-    // 二十四節気の表示に追加
-    $sekki.innerText = `第${sekki.index}節 ${sekki.name}\n日の出: ${sunriseStr}\n日の入り: ${sunsetStr}`;
-
-  }
+  // 24節気判定（terms.js の getSekki を使用）
+  const sekki = getSekki(nowTime);
+  // 例: { index: 4, name: '春分', next: Date }
+  $sekki.textContent = `第${sekki.index}節 ${sekki.name}`;
+  // 二十四節気の表示に追加
+  $sekki.innerText = `第${sekki.index}節 ${sekki.name}\n日の出: ${sunriseStr}\n日の入り: ${sunsetStr}`;
 
 }
 ;
