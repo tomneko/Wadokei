@@ -1,1 +1,1 @@
-window.configPromise = fetch("../config/config.json").then(r => r.json());
+window.configPromise = fetch("./config/config.json").then(r => r.json());
