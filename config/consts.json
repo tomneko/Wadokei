@@ -1,0 +1,7 @@
+{
+    "defaultHand": "/core/drawHand.default.js",
+    "defaultBackplane": "/core/drawBackplane.default.js",
+    "pluginDir": "/plugins/",
+    "pluginRsrcsDir": "/plugins/rsrcs/",
+    "coreDir": "/core/"
+}

@@ -1,11 +1,13 @@
 
-// 時刻を「HH:MM」形式に整形
+/*  時刻を「HH:MM」形式に整形
+*/
 function formatTime(date) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 
-// 24時間制の日時フォーマット（JST）
+/* 24時間制の日時フォーマット（JST）
+*/
 function formatDateTime(d) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');

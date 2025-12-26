@@ -32,7 +32,8 @@
  * プラグインはこのモジュールが提供するデータを参照して描画を行う。
  */
 
-
+/* グローバル名前空間 Wadokei の初期化
+  */
 window.Wadokei = {
   config: {},
   sun: {},
@@ -41,195 +42,44 @@ window.Wadokei = {
   backplane: {}
 };
 
-// const canvas = document.getElementById("clock");
-// const ctx = canvas.getContext("2d");
-// const radius = canvas.width / 2;
-// ctx.translate(radius, radius);
+/* 和時計初期化
+  * config: 設定オブジェクト
+  * consts: 定数オブジェクト
+  */
+function InitWadokei(config, consts) {
 
-function ComputeSunData(date) {
-  const { lat, lon } = Wadokei.config;
-  const sunTimes = getSunTimes(date, lat, lon);
-
-  const sunrise = sunTimes.sunrise.getTime();
-  const sunset = sunTimes.sunset.getTime();
-  const Lday = sunset - sunrise;
-  const trueNoon = sunrise + Lday / 2;
-
-  Wadokei.sun = { sunrise, sunset, Lday, trueNoon };
-}
-
-function InitWadokei(config) {
-
+  Wadokei.consts = { ...consts };
   Wadokei.config = { ...config };
-  ComputeSunData(new Date());
+
+  Wadokei.sun = ComputeSunData(new Date());
 
   startWadokei();
 
 }
 
-configPromise.then(InitWadokei);
+/*  設定・定数読み込みと初期化
+  */
+Promise.allSettled([configPromise, constsPromise])
+  .then(results => {
+    const [configRes, constsRes] = results;
 
-function drawDial(labels, startAngle, totalAngle) {
-  let step = totalAngle / labels.length;
-  const ctx = Wadokei.ctx;
-  const radius = Wadokei.radius;
-
-  ctx.save();
-  try {
-    ctx.font = "20pt 'Yu Mincho', serif";
-    ctx.fillStyle = "#5c3317";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    for (let i = 0; i < labels.length; i++) {
-      let angle = startAngle + (i + 0.5) * step;
-      drawRotatedText(labels[i], angle, radius - 40);
-      // let x = Math.cos(angle) * (radius-40);
-      // let y = Math.sin(angle) * (radius-40);
-      // ctx.fillText(labels[i], x, y);
+    if (configRes.status !== "fulfilled") {
+      return showErrorMessage("config.json の読み込みに失敗しました。");
     }
-  } finally {
-    ctx.restore();
-  }
-}
-
-function drawNumbers(labels, startAngle, totalAngle, innerRadius) {
-  let step = totalAngle / labels.length;
-  const ctx = Wadokei.ctx;
-  const radius = Wadokei.radius;
-
-  ctx.save();
-  try {
-    ctx.font = "16pt 'Yu Mincho', serif";
-    ctx.fillStyle = "#333";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    for (let i = 0; i < labels.length; i++) {
-      let angle = startAngle + (i + 0.5) * step;
-      drawRotatedText(labels[i], angle, radius - 80);
-      // let x = Math.cos(angle) * innerRadius;
-      // let y = Math.sin(angle) * innerRadius;
-      // ctx.fillText(labels[i], x, y);
+    if (constsRes.status !== "fulfilled") {
+      return showErrorMessage("consts.json の読み込みに失敗しました。");
     }
-  } finally {
-    ctx.restore();
-  }
-}
 
-function drawTicks(startAngle, totalAngle, divisions, innerRadius, outerRadius) {
-  let step = totalAngle / divisions;
-  const ctx = Wadokei.ctx;
-  const radius = Wadokei.radius;
+    InitWadokei(configRes.value, constsRes.value);
+  });
 
-  ctx.save();
-  try {
-    ctx.strokeStyle = "#555";
-    ctx.lineWidth = 2;
-    // i=0を飛ばすことで境目の重複を防ぐ
-    for (let i = 1; i <= divisions; i++) {
-      let angle = startAngle + i * step;
-      let x1 = Math.cos(angle) * outerRadius;
-      let y1 = Math.sin(angle) * outerRadius;
-      let x2 = Math.cos(angle) * innerRadius;
-      let y2 = Math.sin(angle) * innerRadius;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-    }
-  } finally {
-    ctx.restore();
-  }
-}
 
-function drawHand(angle, length, opt = {}) {
-  const { scale = 0.4,
-    offsetX = 0,
-    offsetY = 0,
-    tickShift = 0 } = opt;
-  const ctx = Wadokei.ctx;
+/* 針描画（簡易版）はプラグインへ移動しました */
 
-  const acctualAngle = angle + tickShift;
+/* 盤面描画（簡易版）はプラグインへ移動しました */
 
-  ctx.save();
-  try {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(Math.cos(acctualAngle) * length, Math.sin(acctualAngle) * length);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#000";
-    ctx.stroke();
-  } finally {
-    ctx.restore();
-  }
-}
-
-function drawBackplane(ctx, radius, opt) {
-  const { startAngle, dayAngle, nightAngle } = opt;
-
-  // 背景（昼）
-  ctx.save();
-  try {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, radius - 10, startAngle, startAngle + dayAngle);
-    ctx.fillStyle = "#fff8dc";
-    ctx.fill();
-  } finally {
-    ctx.restore();
-  }
-
-  // 背景（夜）
-  ctx.save();
-  try {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, radius - 10, startAngle + dayAngle, startAngle + 2 * Math.PI);
-    ctx.fillStyle = "#e6f0ff";
-    ctx.fill();
-  } finally {
-    ctx.restore();
-  }
-
-  // 外枠
-  ctx.save();
-  try {
-    ctx.beginPath();
-    ctx.arc(0, 0, radius - 10, 0, 2 * Math.PI);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#5c3317";
-    ctx.stroke();
-  } finally {
-    ctx.restore();
-  }
-
-  // 十二支
-  const zodiacDay = ["卯", "辰", "巳", "午", "未", "申"];
-  const zodiacNight = ["酉", "戌", "亥", "子", "丑", "寅"];
-  drawDial(zodiacDay, startAngle, dayAngle);
-  drawDial(zodiacNight, startAngle + dayAngle, nightAngle);
-
-  // 四〜九
-  const clockNumbers = ["四", "五", "六", "七", "八", "九"];
-  drawNumbers(clockNumbers, startAngle, dayAngle, radius - 80);
-  drawNumbers(clockNumbers, startAngle + dayAngle, nightAngle, radius - 80);
-
-  // 境界線
-  drawTicks(startAngle, dayAngle, 6, radius - 60, radius - 20);
-  drawTicks(startAngle + dayAngle, nightAngle, 6, radius - 60, radius - 20);
-
-  // 中央装飾
-  ctx.save();
-  try {
-    ctx.beginPath();
-    ctx.arc(0, 0, 6, 0, 2 * Math.PI);
-    ctx.fillStyle = "#000";
-    ctx.fill();
-  } finally {
-    ctx.restore();
-  }
-  return { shift: 0 }; // ダミー
-}
-
+/* 和時計描画
+  */
 function drawClock() {
   const { dialMode, calMode, lat, lon } = Wadokei.config;
   const { sunrise, sunset, Lday, trueNoon } = Wadokei.sun;
@@ -302,25 +152,10 @@ function drawClock() {
   });
 }
 
-function drawRotatedText(text, angle, radius, rotate = true, offsetAngle = 0) {
-  ctx.save();
-  let totalAngle = angle + offsetAngle;
-
-  // 座標移動
-  ctx.translate(Math.cos(totalAngle) * radius, Math.sin(totalAngle) * radius);
-
-  // 回転する場合のみ
-  if (rotate) {
-    ctx.rotate(totalAngle + Math.PI / 2); // 放射方向に立てる
-  }
-
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, 0, 0);
-
-  ctx.restore();
-}
-
+/*  プラグイン読み込み
+  * url: プラグインスクリプトのURL
+  * 戻り値: Promise（{ url, ok } のオブジェクト）
+  */
 function loadPlugin(url) {
   return new Promise(resolve => {
     const script = document.createElement("script");
@@ -331,15 +166,8 @@ function loadPlugin(url) {
   });
 }
 
-function getSunTimes(date, lat, lon) {
-  const times = SunCalc.getTimes(date, lat, lon);
-  return {
-    sunrise: times.sunrise,
-    sunset: times.sunset
-  };
-}
-
-// Canvas 初期化
+/*  Canvas初期化
+  */
 function initCanvas() {
   // Canvas 初期化
   const canvas = document.getElementById('clock');
@@ -374,7 +202,10 @@ const scaleMap = [
   { w: 600, s: 1.00 }
 ];
 
-// 幅に応じたスケール決定
+/* 画面幅からUIスケールを決定
+  * w: 画面幅（ピクセル）
+  * 戻り値: スケール値（例: 0.75）
+  */
 function uiScaleFromWidth(w) {
   let chosen = scaleMap[0].s;
   for (const item of scaleMap) {
@@ -385,7 +216,9 @@ function uiScaleFromWidth(w) {
   return chosen;
 }
 
-// 和時計の描画（務さんのロジックを利用）
+/*  和時計の描画（務さんのロジックを利用）
+  * config: 設定オブジェクト
+  */
 function draw() {
   const beforeWidth = Wadokei.canvas.clientWidth;
 
@@ -413,29 +246,45 @@ function draw() {
   drawInfoPanel(nowTime);
 }
 
-// 描画ループ開始
+/* 描画ループ開始
+  */
 function startClockLoop() {
   draw();
   setInterval(draw, 1000);
 }
 
-// メイン関数
+/*  メイン関数
+  */
 function startWadokei() {
 
   // Canvas 初期化
   initCanvas();
 
-  // プラグイン読み込み（Promise を返す）
+  // プラグイン名を決定（default → core に置き換え）
+  let handPlugin = Wadokei.config.handPlugin;
+  if (!handPlugin || handPlugin === "default") {
+    handPlugin = Wadokei.consts.defaultHand;
+  } else {
+    handPlugin = Wadokei.consts.pluginDir + handPlugin;
+  }
+
+  let backplanePlugin = Wadokei.config.backplanePlugin;
+  if (!backplanePlugin || backplanePlugin === "default") {
+    backplanePlugin = Wadokei.consts.defaultBackplane;
+  } else {
+    backplanePlugin = Wadokei.consts.pluginDir + backplanePlugin;
+  }
+
+  // 読み込むプラグイン一覧
   const pluginNames = [
-    config.handPlugin,
-    config.backplanePlugin,
-    config.calendarPlugin
+    handPlugin,
+    backplanePlugin,
   ];
 
-  // default を除外してロード
+  // ロード開始
   const pluginLoads = Promise.all(
     pluginNames
-      .filter(name => name && name !== "default")
+      .filter(name => name)     // 空文字を除外
       .map(name => loadPlugin(name))
   );
 
@@ -446,7 +295,9 @@ function startWadokei() {
   });
 }
 
-// 情報パネル描画
+/* 情報パネル描画
+  * nowTime: Dateオブジェクト（現在日時）
+  */
 function drawInfoPanel(nowTime) {
   const { sunrise, sunset } = Wadokei.sun;
 

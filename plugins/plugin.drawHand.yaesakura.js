@@ -22,7 +22,7 @@
 
 function InitDrawHand(config) {
   const img = new Image();
-  img.src = config.handImage || 'yaesakura.webp';
+  img.src = Wadokei.consts.pluginRsrcsDir + (config.handImage || 'yaesakura.webp');
 
   img.onload = () => {
     Wadokei.hand.image = img;

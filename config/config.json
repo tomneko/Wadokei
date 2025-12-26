@@ -3,9 +3,10 @@
     "lon": 139.752799,
     "dialMode": "午上",
     "calMode": "宣明暦",
-    "handPlugin": "plugin.drawHand.yaesakura.js",
-    "backplanePlugin": "plugin.drawBackplane.js",
-    "calendarPlugin": "default",
+    "comment_handPlugin": "plugin.drawHand.yaesakura.js",
+    "handPlugin": "default",
+    "comment_backplanePlugin": "plugin.drawBackplane.js",
+    "backplanePlugin": "default",
     "font": {
         "zodiac": "20pt 'Yu Mincho', serif",
         "numbers": "16pt 'Yu Mincho', serif",

@@ -31,7 +31,7 @@
 
 function InitDrawBackplane(config) {
     const img = new Image();
-    img.src = config.backgroundImage || "brass_backpanel.webp";
+    img.src = Wadokei.consts.pluginRsrcsDir + config.backgroundImage || "brass_backpanel.webp";
     img.onload = () => {
         Wadokei.backplane.image = img;
         Wadokei.backplane.loaded = true;
