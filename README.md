@@ -1,5 +1,7 @@
 # 和時計（Wadokei）
 
+[![GitHub Pages](https://img.shields.io/badge/pages-deployed-blue)](https://tomneko.github.io/Wadokei/)
+
 江戸時代の不定時法を、現代のブラウザ上で再現する Web アプリケーションです。  
 現在時刻・二十四節気・日の出/日の入りをもとに、  
 伝統的な「和時計」の時刻をリアルタイムに表示します。
@@ -44,6 +46,8 @@ https://tomneko.github.io/Wadokei/
 ---
 
 ## 🛠 技術構成
+
+![Language: JavaScript](https://img.shields.io/badge/language-JavaScript-yellow)
 
 - JavaScript（ES6）
 - SunCalc 1.9.0  
