@@ -9,16 +9,19 @@
   * date: Dateオブジェクト（計算対象日時）
   */
 function ComputeSunData(date) {
-    const { lat, lon } = Wadokei.config;
-    const sunTimes = getSunTimes(date, lat, lon);
+  const { lat, lon } = Wadokei.config;
+  const calcDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-    const sunrise = sunTimes.sunrise.getTime();
-    const sunset = sunTimes.sunset.getTime();
-    const Lday = sunset - sunrise;
-    const trueNoon = sunrise + Lday / 2;
+  const sunTimes = getSunTimes(calcDate, lat, lon);
 
-    return { sunrise, sunset, Lday, trueNoon };
+  const sunrise = sunTimes.sunrise.getTime();
+  const sunset = sunTimes.sunset.getTime();
+  const Lday = sunset - sunrise;
+  const trueNoon = sunrise + Lday / 2;
+
+  return { sunrise, sunset, Lday, trueNoon };
 }
+
 
 /*  日の出・日の入り時刻取得
   * date: Dateオブジェクト（計算対象日時）
@@ -27,9 +30,9 @@ function ComputeSunData(date) {
   * 戻り値: { sunrise: Date, sunset: Date }
   */
 function getSunTimes(date, lat, lon) {
-    const times = SunCalc.getTimes(date, lat, lon);
-    return {
-        sunrise: times.sunrise,
-        sunset: times.sunset
-    };
+  const times = SunCalc.getTimes(date, lat, lon);
+  return {
+    sunrise: times.sunrise,
+    sunset: times.sunset
+  };
 }
