@@ -95,5 +95,7 @@ Wadokei/
 
 ## 🙏 謝辞
 
+![Library: SunCalc](https://img.shields.io/badge/library-SunCalc%201.9.0-lightblue)
+
 - [SunCalc](https://github.com/mourner/suncalc)  
   太陽位置計算ライブラリ
