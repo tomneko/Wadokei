@@ -54,7 +54,7 @@ https://tomneko.github.io/Wadokei/
   - 真太陽時（true noon）の算出
 
 ---
-
+```markdown
 ## 📁 ディレクトリ構成
 
 Wadokei/
@@ -71,7 +71,7 @@ Wadokei/
   config/
     config.json
     consts.json
-
+```
 ---
 
 ## 🔧 ローカルで動かす方法
