@@ -45,11 +45,19 @@ window.Wadokei = {
 /* 和時計初期化
   * config: 設定オブジェクト
   * consts: 定数オブジェクト
+  * WadokeiLocal: ローカル環境情報オブジェクト（存在する場合）
+  * 備考: WadokeiLocal はWordpress環境でwp_locarize_script()で注入する
   */
 function InitWadokei(config, consts) {
 
   Wadokei.consts = { ...consts };
   Wadokei.config = { ...config };
+
+  if (typeof WadokeiLocal !== 'undefined') {
+    Wadokei.consts.coreDir = WadokeiLocal.coreDir;
+    Wadokei.consts.pluginDir = WadokeiLocal.pluginDir;
+    Wadokei.consts.pluginRsrcsDir = WadokeiLocal.pluginDir + '/rsrcs/';
+  }
 
   Wadokei.sun = ComputeSunData(new Date());
 
@@ -263,14 +271,14 @@ function startWadokei() {
   // プラグイン名を決定（default → core に置き換え）
   let handPlugin = Wadokei.config.handPlugin;
   if (!handPlugin || handPlugin === "default") {
-    handPlugin = Wadokei.consts.defaultHand;
+    handPlugin = Wadokei.consts.coreDir + Wadokei.consts.defaultHand;
   } else {
     handPlugin = Wadokei.consts.pluginDir + handPlugin;
   }
 
   let backplanePlugin = Wadokei.config.backplanePlugin;
   if (!backplanePlugin || backplanePlugin === "default") {
-    backplanePlugin = Wadokei.consts.defaultBackplane;
+    backplanePlugin = Wadokei.consts.coreDir + Wadokei.consts.defaultBackplane;
   } else {
     backplanePlugin = Wadokei.consts.pluginDir + backplanePlugin;
   }
