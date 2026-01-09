@@ -53,7 +53,7 @@ function InitWadokei(config, consts) {
   Wadokei.consts = { ...consts };
   Wadokei.config = { ...config };
 
-  if (typeof WadokeiLocal !== 'undefined') {
+  if (typeof WadokeiLocal !== 'undefined' && WadokeiLocal !== null) {
     Wadokei.consts.coreDir = WadokeiLocal.coreDir;
     Wadokei.consts.pluginDir = WadokeiLocal.pluginDir;
     Wadokei.consts.pluginRsrcsDir = WadokeiLocal.pluginDir + '/rsrcs/';
