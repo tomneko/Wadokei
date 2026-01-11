@@ -153,6 +153,9 @@ function drawTickAtAngle(angle, r1, r2) {
     }
 }
 
+/*
+    * 指定した太陽高度に最も近い時刻を1分刻みで探索する
+*/
 function findAltitudeTime1min(start, end, targetAlt, lat, lon) {
     let best = null;
     let bestDiff = Infinity;
