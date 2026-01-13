@@ -153,27 +153,9 @@ function drawTickAtAngle(angle, r1, r2) {
     }
 }
 
-/*
-    * 指定した太陽高度に最も近い時刻を1分刻みで探索する
-*/
-function findAltitudeTime1min(start, end, targetAlt, lat, lon) {
-    let best = null;
-    let bestDiff = Infinity;
-
-    for (let t = new Date(start); t <= end; t = new Date(t.getTime() + 60000)) {
-        const alt = SunCalc.getPosition(t, lat, lon).altitude;
-        const diff = Math.abs(alt - targetAlt);
-        if (diff < bestDiff) {
-            bestDiff = diff;
-            best = new Date(t);
-        }
-    }
-    return best;
-}
-
 function drawBackplane(ctx, radius) {
     const { dialMode, lat, lon } = Wadokei.config;
-    const { sunrise, sunset } = Wadokei.sun;
+    const { sunrise, sunset, ake, kure } = Wadokei.sun;
 
     drawBackground(ctx, radius); // ← ここで背景を描画
 
@@ -181,36 +163,17 @@ function drawBackplane(ctx, radius) {
     // 昼の長さと寛政暦補正
     // -----------------------------
 
-    const sunriseDate = new Date(sunrise);
-    const sunsetDate = new Date(sunset);
+    // const sunriseDate = new Date(sunrise);
+    // const sunsetDate = new Date(sunset);
 
-    // -----------------------------
-    // 寛政暦補正：暁六つ（ake）と暮六つ（kure）
-    // -----------------------------
-    const targetAlt = -7.361 * Math.PI / 180;
-
-    const ake = findAltitudeTime1min(
-        new Date(sunrise - 60 * 60000),
-        sunrise,
-        targetAlt,
-        lat, lon
-    );
-
-    const kure = findAltitudeTime1min(
-        sunset,
-        new Date(sunset + 60 * 60000),
-        targetAlt,
-        lat, lon
-    );
-
-    const diffAke = (sunriseDate - ake);
-    const diffKure = (kure - sunsetDate);
+    // const diffAke = (sunriseDate - ake);
+    // const diffKure = (kure - sunsetDate);
 
     // 卯の正刻（明け六つ）
-    const tU = sunrise - diffAke;
+    const tU = ake;//sunrise - diffAke;
 
     // 酉の正刻（暮れ六つ）
-    const tY = sunset + diffKure;
+    const tY = kure;//sunset + diffKure;
 
     // 昼の長さ（寛政暦補正後）
     const rDay = (tY - tU) / (24 * 3600 * 1000);

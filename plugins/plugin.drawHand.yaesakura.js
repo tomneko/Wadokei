@@ -45,7 +45,7 @@ function drawHand(angle, length, opt = {}) {
   const handImage = Wadokei.hand.image;
   const canvasSize = Wadokei.canvas.clientWidth; // CSSで決まった表示サイズ
   Wadokei.hand.scale = canvasSize / Math.max(handImage.width, handImage.height);
-  console.log(`Recommended scale factor: ${Wadokei.hand.scale.toFixed(3)}`);
+  // console.log(`Recommended scale factor: ${Wadokei.hand.scale.toFixed(3)}`);
   const scale = Wadokei.hand.scale || 0.4;
 
   const ctx = Wadokei.ctx;

@@ -236,7 +236,7 @@ function draw() {
     Wadokei.lastCanvasWidth = afterWidth;
     Wadokei.uiScale = uiScaleFromWidth(afterWidth);
   }
-  console.log(`UI Scale: ${Wadokei.uiScale}`);
+  // console.log(`UI Scale: ${Wadokei.uiScale}`);
 
   // 日の出・日の入り再計算（1日1回実行）
   const nowTime = new Date();

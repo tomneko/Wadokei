@@ -19,7 +19,27 @@ function ComputeSunData(date) {
   const Lday = sunset - sunrise;
   const trueNoon = sunrise + Lday / 2;
 
-  return { sunrise, sunset, Lday, trueNoon };
+  // -----------------------------
+  // 寛政暦補正：暁六つ（ake）と暮六つ（kure）
+  // -----------------------------
+  const targetAlt = -7.361 * Math.PI / 180;
+
+  const ake = findAltitudeTime1min(
+    new Date(sunrise - 60 * 60000),
+    sunrise,
+    targetAlt,
+    lat, lon
+  );
+
+  const kure = findAltitudeTime1min(
+    sunset,
+    new Date(sunset + 60 * 60000),
+    targetAlt,
+    lat, lon
+  );
+
+
+  return { sunrise, sunset, Lday, trueNoon, ake, kure };
 }
 
 
@@ -35,4 +55,22 @@ function getSunTimes(date, lat, lon) {
     sunrise: times.sunrise,
     sunset: times.sunset
   };
+}
+
+/*
+    * 指定した太陽高度に最も近い時刻を1分刻みで探索する
+*/
+function findAltitudeTime1min(start, end, targetAlt, lat, lon) {
+  let best = null;
+  let bestDiff = Infinity;
+
+  for (let t = new Date(start); t <= end; t = new Date(t.getTime() + 60000)) {
+    const alt = SunCalc.getPosition(t, lat, lon).altitude;
+    const diff = Math.abs(alt - targetAlt);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = new Date(t);
+    }
+  }
+  return best;
 }
