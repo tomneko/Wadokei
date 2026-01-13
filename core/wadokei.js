@@ -307,7 +307,7 @@ function startWadokei() {
   * nowTime: Dateオブジェクト（現在日時）
   */
 function drawInfoPanel(nowTime) {
-  const { sunrise, sunset } = Wadokei.sun;
+  const { sunrise, sunset, ake, kure } = Wadokei.sun;
 
   // 表示用DOM
   const $datetime = document.getElementById('datetime');
@@ -325,12 +325,16 @@ function drawInfoPanel(nowTime) {
   const sunriseStr = formatTime(new Date(sunrise));
   const sunsetStr = formatTime(new Date(sunset));
 
+  //卯の正刻・酉の正刻表示
+  const akeStr = formatTime(new Date(ake));
+  const kureStr = formatTime(new Date(kure));
+
   // 24節気判定（terms.js の getSekki を使用）
   const sekki = getSekki(nowTime);
   // 例: { index: 4, name: '春分', next: Date }
   $sekki.textContent = `第${sekki.index}節 ${sekki.name}`;
   // 二十四節気の表示に追加
-  $sekki.innerText = `第${sekki.index}節 ${sekki.name}\n日の出: ${sunriseStr}\n日の入り: ${sunsetStr}`;
+  $sekki.innerText = `第${sekki.index}節 ${sekki.name}\n日の出: ${sunriseStr} 卯正刻: ${akeStr}\n日の入: ${sunsetStr} 酉正刻: ${kureStr}`;
 
 }
 ;
