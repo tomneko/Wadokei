@@ -152,6 +152,7 @@ function drawClock() {
     angle -= Math.PI / 2;
   }
 
+  // 針描画
   drawHand(angle, radius - 60, {
     scale: 0.4,
     offsetX: 0,

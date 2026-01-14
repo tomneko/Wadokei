@@ -29,14 +29,14 @@ function ComputeSunData(date) {
     sunrise,
     targetAlt,
     lat, lon
-  );
+  ).getTime();
 
   const kure = findAltitudeTime1min(
     sunset,
     new Date(sunset + 60 * 60000),
     targetAlt,
     lat, lon
-  );
+  ).getTime();
 
 
   return { sunrise, sunset, Lday, trueNoon, ake, kure };

@@ -159,21 +159,11 @@ function drawBackplane(ctx, radius) {
 
     drawBackground(ctx, radius); // ← ここで背景を描画
 
-    // -----------------------------
-    // 昼の長さと寛政暦補正
-    // -----------------------------
-
-    // const sunriseDate = new Date(sunrise);
-    // const sunsetDate = new Date(sunset);
-
-    // const diffAke = (sunriseDate - ake);
-    // const diffKure = (kure - sunsetDate);
-
     // 卯の正刻（明け六つ）
-    const tU = ake;//sunrise - diffAke;
+    const tU = ake;
 
     // 酉の正刻（暮れ六つ）
-    const tY = kure;//sunset + diffKure;
+    const tY = kure;
 
     // 昼の長さ（寛政暦補正後）
     const rDay = (tY - tU) / (24 * 3600 * 1000);
