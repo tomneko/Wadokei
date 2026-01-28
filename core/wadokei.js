@@ -61,8 +61,10 @@ function InitWadokei(config, consts) {
 
   Wadokei.sun = ComputeSunData(new Date());
 
-  startWadokei();
-
+  // フォント読み込み完了後に開始
+  document.fonts.ready.then(() => {
+    startWadokei();
+  });
 }
 
 /*  設定・定数読み込みと初期化
@@ -244,7 +246,7 @@ function draw() {
   const today = nowTime.toDateString();
 
   if (Wadokei.state.lastSunCalcDate !== today) {
-    ComputeSunData(nowTime);
+    Wadokei.sun = ComputeSunData(nowTime);
     Wadokei.state.lastSunCalcDate = today;
   }
 

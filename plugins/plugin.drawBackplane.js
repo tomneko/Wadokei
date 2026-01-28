@@ -43,15 +43,15 @@ function InitDrawBackplane(config) {
         tickInner: 20,
 
         // 干支の文字設定
-        zodiacFontSize: 20,
+        zodiacFontSize: 40,
         zodiacRadiusOffset: 40,
-        zodiacFontFamily: "'Yu Mincho', serif",
+        zodiacFontFamily: "'Long Cang','Ma Shan Zheng','Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif",
         zodiacColor: "#5c3317",
 
         // 漢数字（四〜九）の文字設定
-        numberFontSize: 16,
+        numberFontSize: 32,
         numberRadiusOffset: 80,
-        numberFontFamily: "'Yu Mincho', serif",
+        numberFontFamily: "'Long Cang','Ma Shan Zheng','Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif",
         numberColor: "#333"
 
     };
@@ -182,7 +182,6 @@ function drawBackplane(ctx, radius) {
 
     // 角度に変換（1日 = 2π）
     const tickShift = delta * (2 * Math.PI / 86400000);
-
 
     // -----------------------------
     // 干支角度（純粋幾何学）
