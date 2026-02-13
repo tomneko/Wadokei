@@ -60,6 +60,50 @@
     .value {
       font-variant-numeric: tabular-nums;
     }
+
+    /* --- index.html の <style> 内に追加・修正 --- */
+
+    .wrap {
+      max-width: 900px;
+      /* 横並び用に少し広げる */
+      margin: 24px auto;
+      padding: 0 16px;
+      /* 横向き時のための Flex 設定 */
+      display: flex;
+      flex-direction: column;
+      /* 基本は縦並び */
+      gap: 20px;
+      align-items: center;
+    }
+
+    /* 横向き（Landscape）になった時の処理 */
+    @media (orientation: landscape) {
+      .wrap {
+        flex-direction: row;
+        /* 横並びに変更 */
+        max-width: 100%;
+        /* 横幅を画面いっぱいに */
+        justify-content: center;
+        padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+        /* 島・ノッチ回避 */
+        margin: 0;
+        height: 100vh;
+        /* 画面の高さに合わせる */
+      }
+
+      canvas#clock {
+        max-width: 45vw;
+        /* 画面幅の45%程度に抑える */
+        margin: 0;
+        /* 余計なマージンを消す */
+      }
+
+      .panel {
+        flex: 1;
+        /* 残りのスペースをパネルが埋める */
+        max-width: 400px;
+      }
+    }
   </style>
 </head>
 
