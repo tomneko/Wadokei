@@ -67,12 +67,21 @@ function InitWadokei(config, consts) {
   });
 }
 
+// 読み込み対象のリスト
+const loadTasks = [
+  configPromise,
+  constsPromise,
+  loadPlugin("core/platform.js") // platform.js も並列で読み込む
+];
+
 /*  設定・定数読み込みと初期化
   */
-Promise.allSettled([configPromise, constsPromise])
-  .then(results => {
-    const [configRes, constsRes] = results;
+Promise.allSettled(loadTasks)
+  .then(async results => {
+    // ここで results 配列から 3 つの要素を取り出しています
+    const [configRes, constsRes, platformRes] = results;
 
+    // 1. 必須ファイルのバリデーション
     if (configRes.status !== "fulfilled") {
       return showErrorMessage("config.json の読み込みに失敗しました。");
     }
@@ -80,6 +89,24 @@ Promise.allSettled([configPromise, constsPromise])
       return showErrorMessage("consts.json の読み込みに失敗しました。");
     }
 
+    // 2. プラットフォーム層の初期化とログ
+    if (window.WadokeiPlatform?.init) {
+      try {
+        await window.WadokeiPlatform.init();
+        console.log("✅ Platform layer initialized successfully.");
+      } catch (e) {
+        console.error("❌ Platform init failed during execution:", e);
+      }
+    } else {
+      // ロード自体に失敗したか、initが定義されていない場合
+      if (platformRes.status !== "fulfilled" || !platformRes.value?.ok) {
+        console.warn("⚠️ platform.js could not be loaded. Falling back to default.");
+      } else {
+        console.log("ℹ️ Standard platform mode (no extra init required).");
+      }
+    }
+
+    // 3. 和時計本体の初期化
     InitWadokei(configRes.value, constsRes.value);
   });
 
