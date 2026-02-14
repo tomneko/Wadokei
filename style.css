@@ -1,0 +1,115 @@
+    body {
+        font-family: system-ui, "Yu Mincho", serif;
+        margin: 0;
+        background: #f6f3ee;
+    }
+
+    .wrap {
+        max-width: 720px;
+        margin: 24px auto;
+        padding: 0 16px;
+    }
+
+    canvas {
+        display: block;
+        margin: 0 auto 16px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    #clock {
+        /* 1. 起動直後からサイズを確定させるため、画面の短い方を基準にする */
+        width: 85vmin;
+        height: 85vmin;
+
+        /* 2. PCなど巨大画面用の上限（ここは好みで700px程度まで上げてもOK） */
+        max-width: 600px;
+        max-height: 600px;
+
+        /* 3. 情報パネルの改行を防ぐための絶対防衛ライン */
+        min-width: 320px;
+        min-height: 320px;
+
+        /* 4. アスペクト比と中央寄せの安定化 */
+        aspect-ratio: 1 / 1;
+        object-fit: contain;
+        margin: auto;
+    }
+
+    .panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 12px;
+        align-items: start;
+        padding: 8px 0;
+    }
+
+    .label {
+        color: #6b4b2b;
+    }
+
+    .value {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* --- index.html の <style> 内に追加・修正 --- */
+
+    .wrap {
+        max-width: 900px;
+        /* 横並び用に少し広げる */
+        margin: 24px auto;
+        padding: 0 16px;
+        /* 横向き時のための Flex 設定 */
+        display: flex;
+        flex-direction: column;
+        /* 基本は縦並び */
+        gap: 20px;
+        align-items: center;
+    }
+
+    /* 横向き（Landscape）の時の微調整 */
+    @media (orientation: landscape) {
+        .wrap {
+            flex-direction: row;
+            align-items: center;
+            height: 100vh;
+            justify-content: center;
+            /* 全体を中央に寄せる */
+            padding: 0 5vw;
+            /* 左右に少し余裕を持たせる */
+        }
+
+        /* セレクタを一つに統合 */
+        #clock {
+            /* 1. 基本は高さ基準（上下にはみ出さない） */
+            height: 75vh;
+            width: 75vh;
+
+            /* 2. ただし、横幅が狭い端末でもパネルを圧迫しないよう制限 */
+            max-width: 45vw;
+            max-height: 45vw;
+            /* 正円を維持 */
+
+            margin: 0 30px 0 0;
+            /* 右側にだけパネルとの間隔を作る */
+
+            /* 以前の下限設定を継承 */
+            min-width: 320px;
+            min-height: 320px;
+        }
+
+        .panel {
+            flex: 1;
+            max-width: 400px;
+            /* パネルが浮いて見えないよう、中身を左寄せにするなら以下 */
+            text-align: left;
+        }
+    }
