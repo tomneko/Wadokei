@@ -49,35 +49,154 @@
         max-width: 400px;
         perspective: 1000px;
         cursor: pointer;
-        min-height: 220px;
     }
 
     .panel-inner {
         position: relative;
         width: 100%;
-        min-height: 220px;
         transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
         transition: transform .45s ease;
+        overflow: hidden;
     }
 
     .panel-flip.is-flipped .panel-inner {
         transform: rotateY(180deg);
     }
 
+    .panel-flip.panel-2d .panel-inner,
+    .panel-flip.panel-2d.is-flipped .panel-inner {
+        transform: none;
+        -webkit-transform: none;
+    }
+
     .panel-face {
         position: absolute;
         inset: 0;
         backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        background: #fff;
+        transition: opacity .2s ease;
+    }
+
+    .panel-front {
+        transform: rotateY(0deg) translateZ(1px);
+        -webkit-transform: rotateY(0deg) translateZ(1px);
+        z-index: 2;
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .panel-back {
-        transform: rotateY(180deg);
+        transform: rotateY(180deg) translateZ(1px);
+        -webkit-transform: rotateY(180deg) translateZ(1px);
+        z-index: 1;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .panel-flip.panel-2d .panel-front,
+    .panel-flip.panel-2d .panel-back {
+        transform: none;
+        -webkit-transform: none;
+    }
+
+    .panel-flip.is-flipped .panel-front {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .panel-flip.is-flipped .panel-back {
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .panel-hint {
         margin-top: 16px;
         color: #6b4b2b;
         font-size: .9em;
+    }
+
+    .panel-view {
+        display: none;
+    }
+
+    .panel-view.is-active {
+        display: block;
+    }
+
+    .menu-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .menu-btn {
+        border: 1px solid #d5d0c7;
+        border-radius: 10px;
+        background: #faf9f6;
+        padding: 10px 12px;
+        text-align: left;
+        font: inherit;
+        color: #333;
+    }
+
+    .panel-actions {
+        margin-top: 12px;
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(to top, #fff 75%, rgba(255, 255, 255, 0));
+        padding-top: 8px;
+    }
+
+    .legal-content {
+        line-height: 1.5;
+        font-size: .95em;
+    }
+
+    .legal-scroll {
+        max-height: 42vh;
+        overflow-y: auto;
+        border: 1px solid #e5ddd2;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fcfbf8;
+    }
+
+    .legal-content p {
+        margin: 0 0 8px;
+    }
+
+    .legal-content h1,
+    .legal-content h2,
+    .legal-content h3 {
+        margin: 10px 0 6px;
+        color: #6b4b2b;
+        font-size: 1em;
+    }
+
+    .legal-content ul {
+        margin: 0 0 8px 1.2em;
+        padding: 0;
+    }
+
+    .legal-content li {
+        margin-bottom: 4px;
+    }
+
+    .legal-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #6b4b2b;
+    }
+
+    .legal-text {
+        line-height: 1.5;
     }
 
     .row {
@@ -100,6 +219,75 @@
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    .setting-value {
+        justify-content: flex-start;
+    }
+
+    .ios-switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 32px;
+    }
+
+    .ios-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .ios-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #d9d9de;
+        transition: .2s;
+        border-radius: 999px;
+    }
+
+    .ios-slider:before {
+        content: "";
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        left: 2px;
+        top: 2px;
+        background-color: #fff;
+        transition: .2s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    }
+
+    .ios-switch input:checked+.ios-slider {
+        background-color: #007aff;
+    }
+
+    .ios-switch input:checked+.ios-slider:before {
+        transform: translateX(20px);
+    }
+
+    .ios-switch input:focus+.ios-slider {
+        box-shadow: 0 0 0 2px rgba(0, 122, 255, .25);
+    }
+
+    .panel-flip.is-subflipping .panel-back {
+        animation: backViewFlip .36s ease;
+    }
+
+    @keyframes backViewFlip {
+        0% {
+            transform: rotateY(180deg);
+        }
+
+        50% {
+            transform: rotateY(270deg);
+        }
+
+        100% {
+            transform: rotateY(180deg);
+        }
     }
 
     /* --- index.html の <style> 内に追加・修正 --- */

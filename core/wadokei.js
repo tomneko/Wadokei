@@ -44,8 +44,21 @@ window.Wadokei = {
 
 const SETTINGS_KEY = "wadokei.settings.v1";
 const DEFAULT_USER_SETTINGS = {
-  showDayNight: true
+  showDayNight: true,
+  language: "auto"
 };
+
+function t(key, params = {}) {
+  const template = window.WadokeiPlatform?.translate?.(key, params) || key;
+
+  return template.replace(/\{(\w+)\}/g, (_, token) => {
+    return params[token] ?? `{${token}}`;
+  });
+}
+
+function applyTranslations() {
+  window.WadokeiPlatform?.applyTranslations?.();
+}
 
 /* 和時計初期化
   * config: 設定オブジェクト
@@ -66,8 +79,29 @@ async function InitWadokei(config, consts) {
 
   Wadokei.sun = ComputeSunData(new Date());
   Wadokei.userSettings = await loadUserSettings();
-  setupInfoPanelInteractions();
-  applySettingsToUI();
+  window.WadokeiPlatform?.refreshLocale?.(Wadokei.userSettings);
+  window.WadokeiPlatform?.applyTranslations?.();
+  if (window.WadokeiPlatform?.setupInfoPanelInteractions) {
+    await window.WadokeiPlatform.setupInfoPanelInteractions({
+      t,
+      getSettings: () => Wadokei.userSettings,
+      setSettings: (patch) => {
+        Wadokei.userSettings = { ...Wadokei.userSettings, ...patch };
+      },
+      saveSettings: saveUserSettings,
+      refreshLocale: () => {
+        window.WadokeiPlatform?.refreshLocale?.(Wadokei.userSettings);
+        window.WadokeiPlatform?.applyTranslations?.();
+      },
+      redraw: () => draw()
+    });
+  }
+  if (window.WadokeiPlatform?.applySettingsToUI) {
+    window.WadokeiPlatform.applySettingsToUI({
+      t,
+      getSettings: () => Wadokei.userSettings
+    });
+  }
 
   // フォント読み込み完了後に開始
   document.fonts.ready.then(() => {
@@ -387,70 +421,29 @@ async function saveUserSettings() {
 }
 
 function applySettingsToUI() {
-  const toggle = document.getElementById("show-day-night");
-  if (!toggle) {
-    return;
-  }
-  toggle.checked = Wadokei.userSettings?.showDayNight !== false;
+  window.WadokeiPlatform?.applySettingsToUI?.({
+    t,
+    getSettings: () => Wadokei.userSettings
+  });
 }
 
 function syncInfoPanelHeight() {
-  const inner = document.querySelector("#info-panel .panel-inner");
-  const front = document.querySelector("#info-panel .panel-front");
-  const back = document.querySelector("#info-panel .panel-back");
-
-  if (!inner || !front || !back) {
-    return;
-  }
-
-  const frontHeight = front.scrollHeight;
-  const backHeight = back.scrollHeight;
-  inner.style.height = `${Math.max(frontHeight, backHeight)}px`;
+  window.WadokeiPlatform?.syncInfoPanelHeight?.();
 }
 
 function setupInfoPanelInteractions() {
-  const panel = document.getElementById("info-panel");
-  const toggle = document.getElementById("show-day-night");
-
-  if (!panel) {
-    return;
-  }
-
-  const flip = () => {
-    const flipped = panel.classList.toggle("is-flipped");
-    panel.setAttribute("aria-pressed", flipped ? "true" : "false");
-    syncInfoPanelHeight();
-  };
-
-  syncInfoPanelHeight();
-  window.addEventListener("resize", syncInfoPanelHeight);
-
-  panel.addEventListener("click", (event) => {
-    if (event.target?.closest(".no-flip")) {
-      return;
-    }
-    flip();
-  });
-
-  panel.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      flip();
-    }
-  });
-
-  if (!toggle) {
-    return;
-  }
-
-  toggle.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
-
-  toggle.addEventListener("change", async (event) => {
-    Wadokei.userSettings.showDayNight = event.target.checked;
-    await saveUserSettings();
-    draw();
+  window.WadokeiPlatform?.setupInfoPanelInteractions?.({
+    t,
+    getSettings: () => Wadokei.userSettings,
+    setSettings: (patch) => {
+      Wadokei.userSettings = { ...Wadokei.userSettings, ...patch };
+    },
+    saveSettings: saveUserSettings,
+    refreshLocale: () => {
+      window.WadokeiPlatform?.refreshLocale?.(Wadokei.userSettings);
+      window.WadokeiPlatform?.applyTranslations?.();
+    },
+    redraw: () => draw()
   });
 }
 
@@ -482,10 +475,8 @@ function drawInfoPanel(nowTime) {
 
   // 24節気判定（terms.js の getSekki を使用）
   const sekki = getSekki(nowTime);
-  // 例: { index: 4, name: '春分', next: Date }
-  $sekki.textContent = `第${sekki.index}節 ${sekki.name}`;
-  // 二十四節気の表示に追加
-  $sekki.innerText = `第${sekki.index}節 ${sekki.name}\n日の出: ${sunriseStr} 卯正刻: ${akeStr}\n日の入: ${sunsetStr} 酉正刻: ${kureStr}`;
+  const sekkiHeader = t("sekki.prefix", { index: sekki.index, name: sekki.name });
+  $sekki.innerText = `${sekkiHeader}\n${t("sun.sunrise")}: ${sunriseStr} ${t("sun.ake")}: ${akeStr}\n${t("sun.sunset")}: ${sunsetStr} ${t("sun.kure")}: ${kureStr}`;
 
   syncInfoPanelHeight();
 

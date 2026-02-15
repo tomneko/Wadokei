@@ -1,5 +1,7 @@
 # 和時計（Wadokei）
 
+[English](./README.en.md)
+
 [![GitHub Pages](https://img.shields.io/badge/pages-deployed-blue)](https://tomneko.github.io/Wadokei/)
 
 江戸時代の不定時法を、現代のブラウザ上で再現する Web アプリケーションです。  
@@ -64,6 +66,11 @@ https://tomneko.github.io/Wadokei/
 ```markdown
 Wadokei/
   index.html
+  docs/
+    open-source-licenses.md
+    terms-of-service.md
+    privacy-policy.md
+    tokushoho.md
   core/
     wadokei.js
     config-loader.js
@@ -77,6 +84,9 @@ Wadokei/
     config.json
     consts.json
 ```
+
+- `docs/` はアプリ内表示用の法務ドキュメント（OSS / 利用規約 / プライバシー / 特商法）を格納します。
+
 ---
 
 ## 🔧 ローカルで動かす方法
