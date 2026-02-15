@@ -158,7 +158,10 @@ function applyTranslations() {
 function createInfoPanelController() {
     const state = {
         initialized: false,
-        isBackTransitioning: false
+        currentView: 'home',
+        legalHtml: {
+            oss: ''
+        }
     };
 
     function updateFaceVisibility(panel) {
@@ -177,12 +180,12 @@ function createInfoPanelController() {
         const panel = document.getElementById('info-panel');
         const inner = panel?.querySelector('.panel-inner');
         const front = panel?.querySelector('.panel-front');
-        const activeBackView = panel?.querySelector('.panel-back .panel-view.is-active');
+        const back = panel?.querySelector('.panel-back');
         if (!panel || !inner || !front) return;
 
         const isFlipped = panel.classList.contains('is-flipped');
         const targetHeight = isFlipped
-            ? (activeBackView?.scrollHeight || front.scrollHeight)
+            ? (back?.scrollHeight || front.scrollHeight)
             : front.scrollHeight;
 
         const viewportHeight = window.visualViewport?.height || window.innerHeight;
@@ -208,38 +211,73 @@ function createInfoPanelController() {
         }
     }
 
-    function showBackViewImmediate(viewId) {
+    function renderBackView(ctx, viewId) {
         const panel = document.getElementById('info-panel');
-        const views = panel?.querySelectorAll('.panel-back .panel-view') || [];
-        views.forEach((view) => {
-            view.classList.toggle('is-active', view.id === viewId);
-        });
+        const back = panel?.querySelector('.panel-back');
+        if (!back) return;
+
+        if (viewId === 'settings') {
+            back.innerHTML = `
+                <div class="row row-setting no-flip">
+                    <div class="label" data-i18n="setting.dayNight">昼夜区分け</div>
+                    <div class="value setting-value">
+                        <label class="ios-switch no-flip" for="show-day-night">
+                            <input id="show-day-night" type="checkbox" class="no-flip" checked>
+                            <span class="ios-slider"></span>
+                        </label>
+                        <span id="show-day-night-label">表示</span>
+                    </div>
+                </div>
+                <div class="row row-setting no-flip">
+                    <label class="label" for="language-select" data-i18n="setting.language">言語</label>
+                    <div class="value">
+                        <select id="language-select" class="no-flip">
+                            <option value="auto">Auto</option>
+                            <option value="ja">日本語</option>
+                            <option value="en">English</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="panel-actions">
+                    <button type="button" class="menu-btn no-flip" data-panel-view="home" data-i18n="menu.back">戻る</button>
+                </div>
+            `;
+        } else if (viewId === 'oss') {
+            back.innerHTML = `
+                <div class="legal-title" data-i18n="menu.oss">オープンソースライセンス</div>
+                <div class="legal-scroll legal-content">${state.legalHtml.oss || '読み込み中...'}</div>
+                <div class="panel-actions">
+                    <button type="button" class="menu-btn no-flip" data-panel-view="home" data-i18n="menu.back">戻る</button>
+                </div>
+            `;
+        } else {
+            back.innerHTML = `
+                <div class="row">
+                    <div class="label" data-i18n="label.version">バージョン</div>
+                    <div id="app-version" class="value">1.0.0</div>
+                </div>
+                <div class="row">
+                    <div class="label" data-i18n="label.copyright">著作権</div>
+                    <div class="value">© 2026 Anaheim Technology Inc.</div>
+                </div>
+                <div class="row">
+                    <div class="label">License</div>
+                    <div class="value">MIT</div>
+                </div>
+                <div class="menu-list">
+                    <button type="button" class="menu-btn no-flip" data-panel-view="settings" data-i18n="menu.settings">設定</button>
+                    <button type="button" class="menu-btn no-flip" data-panel-view="oss" data-i18n="menu.oss">オープンソースライセンス</button>
+                    <button type="button" class="menu-btn no-flip panel-close" data-panel-action="close" data-i18n="menu.backToFront">表へ戻る</button>
+                </div>
+            `;
+        }
+
+        state.currentView = viewId;
+        applyTranslations();
+        applySettingsToUI(ctx);
         syncInfoPanelHeight();
-    }
-
-    function showBackView(viewId) {
-        const panel = document.getElementById('info-panel');
-        const views = panel?.querySelectorAll('.panel-back .panel-view') || [];
-        if (!panel || state.isBackTransitioning) return;
-
-        const current = panel.querySelector('.panel-back .panel-view.is-active');
-        if (current?.id === viewId) return;
-
-        state.isBackTransitioning = true;
-        panel.classList.add('is-subflipping');
-
-        setTimeout(() => {
-            views.forEach((view) => {
-                view.classList.toggle('is-active', view.id === viewId);
-            });
-            syncInfoPanelHeight();
-        }, 160);
-
-        setTimeout(() => {
-            panel.classList.remove('is-subflipping');
-            state.isBackTransitioning = false;
-            syncInfoPanelHeight();
-        }, 320);
     }
 
     function renderMarkdownToHtml(markdownText) {
@@ -297,19 +335,8 @@ function createInfoPanelController() {
     }
 
     async function loadLegalDocuments() {
-        const targets = [
-            { elementId: 'legal-oss', fileName: 'open-source-licenses.md' },
-            { elementId: 'legal-terms', fileName: 'terms-of-service.md' },
-            { elementId: 'legal-privacy', fileName: 'privacy-policy.md' },
-            { elementId: 'legal-tokushoho', fileName: 'tokushoho.md' }
-        ];
-
-        for (const target of targets) {
-            const container = document.getElementById(target.elementId);
-            if (!container) continue;
-            const markdown = await fetchLegalMarkdown(target.fileName);
-            container.innerHTML = renderMarkdownToHtml(markdown);
-        }
+        const markdown = await fetchLegalMarkdown('open-source-licenses.md');
+        state.legalHtml.oss = renderMarkdownToHtml(markdown);
 
         syncInfoPanelHeight();
     }
@@ -326,15 +353,10 @@ function createInfoPanelController() {
 
         await loadLegalDocuments();
 
-        const toggle = document.getElementById('show-day-night');
-        const languageSelect = document.getElementById('language-select');
-        const menuButtons = panel.querySelectorAll('[data-panel-view]');
-        const closeButtons = panel.querySelectorAll('.panel-close');
-
         const openBack = () => {
             panel.classList.add('is-flipped');
             panel.setAttribute('aria-pressed', 'true');
-            showBackViewImmediate('panel-back-home');
+            renderBackView(ctx, 'home');
         };
 
         const closeBack = () => {
@@ -347,7 +369,23 @@ function createInfoPanelController() {
         window.addEventListener('resize', syncInfoPanelHeight);
 
         panel.addEventListener('click', (event) => {
-            if (panel.classList.contains('is-flipped')) return;
+            if (panel.classList.contains('is-flipped')) {
+                const button = event.target?.closest('button');
+                if (!button) return;
+                event.stopPropagation();
+
+                const action = button.getAttribute('data-panel-action');
+                const view = button.getAttribute('data-panel-view');
+                if (action === 'close') {
+                    closeBack();
+                    return;
+                }
+                if (view) {
+                    renderBackView(ctx, view);
+                }
+                return;
+            }
+
             if (event.target?.closest('.no-flip')) return;
             openBack();
         });
@@ -363,46 +401,26 @@ function createInfoPanelController() {
             }
         });
 
-        menuButtons.forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
-                const target = button.getAttribute('data-panel-view');
-                if (target) {
-                    showBackView(target);
-                    const targetView = document.getElementById(target);
-                    if (targetView) targetView.scrollTop = 0;
-                }
-            });
-        });
+        panel.addEventListener('change', async (event) => {
+            if (!panel.classList.contains('is-flipped')) return;
 
-        closeButtons.forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
-                closeBack();
-            });
-        });
-
-        if (toggle) {
-            toggle.addEventListener('click', (event) => event.stopPropagation());
-            toggle.addEventListener('change', async (event) => {
+            if (event.target?.id === 'show-day-night') {
                 ctx.setSettings({ showDayNight: event.target.checked });
                 applySettingsToUI(ctx);
                 await ctx.saveSettings();
                 ctx.redraw();
                 syncInfoPanelHeight();
-            });
-        }
+                return;
+            }
 
-        if (languageSelect) {
-            languageSelect.addEventListener('change', async (event) => {
+            if (event.target?.id === 'language-select') {
                 ctx.setSettings({ language: event.target.value });
                 ctx.refreshLocale();
-                applySettingsToUI(ctx);
-                ctx.redraw();
                 await ctx.saveSettings();
-                syncInfoPanelHeight();
-            });
-        }
+                renderBackView(ctx, state.currentView);
+                ctx.redraw();
+            }
+        });
 
         applySettingsToUI(ctx);
         syncInfoPanelHeight();
