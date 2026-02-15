@@ -42,13 +42,18 @@ window.Wadokei = {
   backplane: {}
 };
 
+const SETTINGS_KEY = "wadokei.settings.v1";
+const DEFAULT_USER_SETTINGS = {
+  showDayNight: true
+};
+
 /* 和時計初期化
   * config: 設定オブジェクト
   * consts: 定数オブジェクト
   * WadokeiLocal: ローカル環境情報オブジェクト（存在する場合）
   * 備考: WadokeiLocal はWordpress環境でwp_locarize_script()で注入する
   */
-function InitWadokei(config, consts) {
+async function InitWadokei(config, consts) {
 
   Wadokei.consts = { ...consts };
   Wadokei.config = { ...config };
@@ -60,6 +65,9 @@ function InitWadokei(config, consts) {
   }
 
   Wadokei.sun = ComputeSunData(new Date());
+  Wadokei.userSettings = await loadUserSettings();
+  setupInfoPanelInteractions();
+  applySettingsToUI();
 
   // フォント読み込み完了後に開始
   document.fonts.ready.then(() => {
@@ -107,7 +115,7 @@ Promise.allSettled(loadTasks)
     }
 
     // 3. 和時計本体の初期化
-    InitWadokei(configRes.value, constsRes.value);
+    await InitWadokei(configRes.value, constsRes.value);
   });
 
 
@@ -166,7 +174,8 @@ function drawClock() {
     nightAngle,
     dialMode,
     sunrise,
-    sunset
+    sunset,
+    showDayNight: Wadokei.userSettings?.showDayNight !== false
   });
   const tickShift = bp.shift;
 
@@ -333,6 +342,118 @@ function startWadokei() {
   });
 }
 
+async function loadUserSettings() {
+  let raw = null;
+
+  try {
+    if (window.WadokeiPlatform?.getSetting) {
+      raw = await window.WadokeiPlatform.getSetting(SETTINGS_KEY);
+    } else {
+      raw = localStorage.getItem(SETTINGS_KEY);
+    }
+  } catch (e) {
+    console.warn("⚠️ Failed to read settings:", e);
+  }
+
+  if (!raw) {
+    return { ...DEFAULT_USER_SETTINGS };
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_USER_SETTINGS,
+      ...parsed,
+      showDayNight: parsed.showDayNight !== false
+    };
+  } catch (e) {
+    console.warn("⚠️ Invalid settings payload. Using defaults.", e);
+    return { ...DEFAULT_USER_SETTINGS };
+  }
+}
+
+async function saveUserSettings() {
+  const payload = JSON.stringify(Wadokei.userSettings || DEFAULT_USER_SETTINGS);
+
+  try {
+    if (window.WadokeiPlatform?.setSetting) {
+      await window.WadokeiPlatform.setSetting(SETTINGS_KEY, payload);
+      return;
+    }
+    localStorage.setItem(SETTINGS_KEY, payload);
+  } catch (e) {
+    console.warn("⚠️ Failed to save settings:", e);
+  }
+}
+
+function applySettingsToUI() {
+  const toggle = document.getElementById("show-day-night");
+  if (!toggle) {
+    return;
+  }
+  toggle.checked = Wadokei.userSettings?.showDayNight !== false;
+}
+
+function syncInfoPanelHeight() {
+  const inner = document.querySelector("#info-panel .panel-inner");
+  const front = document.querySelector("#info-panel .panel-front");
+  const back = document.querySelector("#info-panel .panel-back");
+
+  if (!inner || !front || !back) {
+    return;
+  }
+
+  const frontHeight = front.scrollHeight;
+  const backHeight = back.scrollHeight;
+  inner.style.height = `${Math.max(frontHeight, backHeight)}px`;
+}
+
+function setupInfoPanelInteractions() {
+  const panel = document.getElementById("info-panel");
+  const toggle = document.getElementById("show-day-night");
+
+  if (!panel) {
+    return;
+  }
+
+  const flip = () => {
+    const flipped = panel.classList.toggle("is-flipped");
+    panel.setAttribute("aria-pressed", flipped ? "true" : "false");
+    syncInfoPanelHeight();
+  };
+
+  syncInfoPanelHeight();
+  window.addEventListener("resize", syncInfoPanelHeight);
+
+  panel.addEventListener("click", (event) => {
+    if (event.target?.closest(".no-flip")) {
+      return;
+    }
+    flip();
+  });
+
+  panel.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      flip();
+    }
+  });
+
+  if (!toggle) {
+    return;
+  }
+
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  toggle.addEventListener("change", async (event) => {
+    Wadokei.userSettings.showDayNight = event.target.checked;
+    await saveUserSettings();
+    draw();
+  });
+}
+
 /* 情報パネル描画
   * nowTime: Dateオブジェクト（現在日時）
   */
@@ -366,5 +487,6 @@ function drawInfoPanel(nowTime) {
   // 二十四節気の表示に追加
   $sekki.innerText = `第${sekki.index}節 ${sekki.name}\n日の出: ${sunriseStr} 卯正刻: ${akeStr}\n日の入: ${sunsetStr} 酉正刻: ${kureStr}`;
 
+  syncInfoPanelHeight();
+
 }
-;

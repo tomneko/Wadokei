@@ -44,6 +44,42 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
     }
 
+    .panel-flip {
+        width: 100%;
+        max-width: 400px;
+        perspective: 1000px;
+        cursor: pointer;
+        min-height: 220px;
+    }
+
+    .panel-inner {
+        position: relative;
+        width: 100%;
+        min-height: 220px;
+        transform-style: preserve-3d;
+        transition: transform .45s ease;
+    }
+
+    .panel-flip.is-flipped .panel-inner {
+        transform: rotateY(180deg);
+    }
+
+    .panel-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+    }
+
+    .panel-back {
+        transform: rotateY(180deg);
+    }
+
+    .panel-hint {
+        margin-top: 16px;
+        color: #6b4b2b;
+        font-size: .9em;
+    }
+
     .row {
         display: grid;
         grid-template-columns: 140px 1fr;
@@ -58,6 +94,12 @@
 
     .value {
         font-variant-numeric: tabular-nums;
+    }
+
+    .row-setting .value {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     /* --- index.html の <style> 内に追加・修正 --- */
@@ -78,6 +120,8 @@
     /* 横向き（Landscape）の時の微調整 */
     @media (orientation: landscape) {
         .wrap {
+            width: 100%;
+            max-width: 1280px;
             flex-direction: row;
             align-items: center;
             height: 100vh;
@@ -107,7 +151,9 @@
         }
 
         .panel {
-            flex: 1;
+            flex: 0 0 360px;
+            width: 360px;
+            min-width: 340px;
             max-width: 400px;
             /* パネルが浮いて見えないよう、中身を左寄せにするなら以下 */
             text-align: left;

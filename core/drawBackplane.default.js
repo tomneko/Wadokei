@@ -7,32 +7,34 @@
   * - nightAngle: 夜部分の角度（ラジアン）
   */
 function drawBackplane(ctx, radius, opt) {
-    const { startAngle, dayAngle, nightAngle } = opt;
+    const { startAngle, dayAngle, nightAngle, showDayNight = true } = opt;
 
-    // 背景（昼）
-    ctx.save();
-    try {
-        ctx.rotate(-Math.PI / 2);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, radius - 10, startAngle, startAngle + dayAngle);
-        ctx.fillStyle = "#fff8dc";
-        ctx.fill();
-    } finally {
-        ctx.restore();
-    }
+    if (showDayNight) {
+        // 背景（昼）
+        ctx.save();
+        try {
+            ctx.rotate(-Math.PI / 2);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, radius - 10, startAngle, startAngle + dayAngle);
+            ctx.fillStyle = "#fff8dc";
+            ctx.fill();
+        } finally {
+            ctx.restore();
+        }
 
-    // 背景（夜）
-    ctx.save();
-    try {
-        ctx.rotate(-Math.PI / 2);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, radius - 10, startAngle + dayAngle, startAngle + 2 * Math.PI);
-        ctx.fillStyle = "#e6f0ff";
-        ctx.fill();
-    } finally {
-        ctx.restore();
+        // 背景（夜）
+        ctx.save();
+        try {
+            ctx.rotate(-Math.PI / 2);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, radius - 10, startAngle + dayAngle, startAngle + 2 * Math.PI);
+            ctx.fillStyle = "#e6f0ff";
+            ctx.fill();
+        } finally {
+            ctx.restore();
+        }
     }
 
     // 外枠

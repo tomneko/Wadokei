@@ -153,7 +153,8 @@ function drawTickAtAngle(angle, r1, r2) {
     }
 }
 
-function drawBackplane(ctx, radius) {
+function drawBackplane(ctx, radius, opt = {}) {
+    const { showDayNight = true } = opt;
     const { dialMode, lat, lon } = Wadokei.config;
     const { sunrise, sunset, ake, kure } = Wadokei.sun;
 
@@ -301,27 +302,29 @@ function drawBackplane(ctx, radius) {
     // -----------------------------
     ctx.save();
     try {
-        // 昼背景
-        ctx.save();
-        try {
-            ctx.rotate(-Math.PI / 2);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, radius - 10, angleU2, angleY2);
-            ctx.fillStyle = "rgba(255, 248, 220, 0.6)";
-            ctx.fill();
-        } finally { ctx.restore(); }
+        if (showDayNight) {
+            // 昼背景
+            ctx.save();
+            try {
+                ctx.rotate(-Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius - 10, angleU2, angleY2);
+                ctx.fillStyle = "rgba(255, 248, 220, 0.6)";
+                ctx.fill();
+            } finally { ctx.restore(); }
 
-        // 夜背景
-        ctx.save();
-        try {
-            ctx.rotate(-Math.PI / 2);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, radius - 10, angleY2, angleU2 + 2 * Math.PI);
-            ctx.fillStyle = "rgba(230, 240, 255, 0.6)";
-            ctx.fill();
-        } finally { ctx.restore(); }
+            // 夜背景
+            ctx.save();
+            try {
+                ctx.rotate(-Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius - 10, angleY2, angleU2 + 2 * Math.PI);
+                ctx.fillStyle = "rgba(230, 240, 255, 0.6)";
+                ctx.fill();
+            } finally { ctx.restore(); }
+        }
 
         // 干支
         for (const z in angle) {

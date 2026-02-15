@@ -14,18 +14,52 @@
 <body>
   <div class="wrap">
     <canvas id="clock"></canvas>
-    <section class="panel" aria-label="データ表示">
-      <div class="row">
-        <div class="label">年月日・時刻</div>
-        <div id="datetime" class="value">—</div>
-      </div>
-      <div class="row">
-        <div class="label">24節気</div>
-        <div id="sekki" class="value">—</div>
-      </div>
-      <div class="row">
-        <div class="label">タイムゾーン</div>
-        <div id="timezone" class="value">—</div>
+    <section id="info-panel" class="panel panel-flip" aria-label="データ表示" role="button" tabindex="0" aria-pressed="false">
+      <div class="panel-inner">
+        <div class="panel-face panel-front">
+          <div class="row">
+            <div class="label">年月日・時刻</div>
+            <div id="datetime" class="value">—</div>
+          </div>
+          <div class="row">
+            <div class="label">24節気</div>
+            <div id="sekki" class="value">—</div>
+          </div>
+          <div class="row">
+            <div class="label">タイムゾーン</div>
+            <div id="timezone" class="value">—</div>
+          </div>
+          <div class="row row-setting no-flip">
+            <label class="label" for="show-day-night">昼夜区分け</label>
+            <div class="value">
+              <input id="show-day-night" type="checkbox" class="no-flip" checked>
+              <span>表示</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-face panel-back" aria-label="コピーライト">
+          <div class="row">
+            <div class="label">Version</div>
+            <div id="app-version" class="value">1.0.0</div>
+          </div>
+          <div class="row">
+            <div class="label">Copyright</div>
+            <div class="value">© 2026 Anaheim Technology Inc All rights reserved.</div>
+          </div>
+          <div class="row">
+            <div class="label">App License</div>
+            <div class="value">Proprietary (All rights reserved)</div>
+          </div>
+          <div class="row">
+            <div class="label">Open Source</div>
+            <div class="value">See docs/open-source-licenses.md</div>
+          </div>
+          <div class="row">
+            <div class="label">Policy</div>
+            <div class="value">See docs/terms-of-service.md, docs/privacy-policy.md, docs/tokushoho.md</div>
+          </div>
+          <div class="panel-hint">タップで戻る</div>
+        </div>
       </div>
     </section>
   </div>
