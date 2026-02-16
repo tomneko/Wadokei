@@ -1,6 +1,6 @@
 # Wadokei
 
-[日本語はこちら](./README.md)
+[Japanese](./README.md)
 
 [![GitHub Pages](https://img.shields.io/badge/pages-deployed-blue)](https://tomneko.github.io/Wadokei/)
 
@@ -58,13 +58,14 @@ Wadokei/
   index.html
   docs/
     open-source-licenses.md
-    terms-of-service.md
-    privacy-policy.md
-    tokushoho.md
   core/
     wadokei.js
     config-loader.js
     consts-loader.js
+  plugins/
+    plugin.drawBackplane.js
+    plugin.drawHand.js
+    plugin.drawHand.yaesakura.js
   utils/
     datetime.js
     taiyou.js
@@ -74,16 +75,6 @@ Wadokei/
     config.json
     consts.json
 ```
-
-- `docs/` contains legal/app-compliance documents used in-app (OSS / Terms / Privacy / Commercial Law disclosure).
-
----
-
-## 📱 iOS / Capacitor Integration Notes
-
-- The iOS app project (`Wadokei.Parent`) includes this repository as a submodule.
-- Running `npm run capsync` in `Wadokei.Parent` copies `Wadokei/docs/*.md` into iOS `public/docs`.
-- Update legal documents in this repository (`Wadokei/docs/`).
 
 ---
 

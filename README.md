@@ -68,13 +68,14 @@ Wadokei/
   index.html
   docs/
     open-source-licenses.md
-    terms-of-service.md
-    privacy-policy.md
-    tokushoho.md
   core/
     wadokei.js
     config-loader.js
     consts-loader.js
+  plugins/
+    plugin.drawBackplane.js
+    plugin.drawHand.js
+    plugin.drawHand.yaesakura.js
   utils/
     datetime.js
     taiyou.js
@@ -84,8 +85,6 @@ Wadokei/
     config.json
     consts.json
 ```
-
-- `docs/` はアプリ内表示用の法務ドキュメント（OSS / 利用規約 / プライバシー / 特商法）を格納します。
 
 ---
 
