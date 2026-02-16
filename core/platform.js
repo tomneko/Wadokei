@@ -158,10 +158,7 @@ function applyTranslations() {
 function createInfoPanelController() {
     const state = {
         initialized: false,
-        currentView: 'home',
-        legalHtml: {
-            oss: ''
-        }
+        currentView: 'home'
     };
 
     function updateFaceVisibility(panel) {
@@ -181,6 +178,7 @@ function createInfoPanelController() {
         const inner = panel?.querySelector('.panel-inner');
         const front = panel?.querySelector('.panel-front');
         const back = panel?.querySelector('.panel-back');
+        const menuBar = document.querySelector('.bottom-menu-bar');
         if (!panel || !inner || !front) return;
 
         const isFlipped = panel.classList.contains('is-flipped');
@@ -190,9 +188,35 @@ function createInfoPanelController() {
 
         const viewportHeight = window.visualViewport?.height || window.innerHeight;
         const panelTop = panel.getBoundingClientRect().top;
-        const availableHeight = Math.max(180, Math.floor(viewportHeight - panelTop - 12));
+        const menuBarHeight = menuBar?.getBoundingClientRect().height || 0;
+        const availableHeight = Math.max(180, Math.floor(viewportHeight - panelTop - menuBarHeight - 16));
         inner.style.height = `${Math.min(targetHeight, availableHeight)}px`;
         updateFaceVisibility(panel);
+    }
+
+    function updateMenuDockButton(menuDockButton, isBackVisible) {
+        if (!menuDockButton) return;
+
+        const label = menuDockButton.querySelector('.menu-dock-label');
+        const icon = menuDockButton.querySelector('.menu-dock-icon');
+        const labelKey = isBackVisible ? 'menu.back' : 'menu.settings';
+
+        if (label) {
+            label.setAttribute('data-i18n', labelKey);
+            label.textContent = translate(labelKey);
+        }
+
+        if (icon) {
+            if (isBackVisible) {
+                icon.classList.remove('material-symbols-outlined');
+                icon.textContent = '↩︎';
+            } else {
+                icon.classList.add('material-symbols-outlined');
+                icon.textContent = 'settings';
+            }
+        }
+
+        menuDockButton.setAttribute('aria-label', translate(labelKey));
     }
 
     function applySettingsToUI(ctx) {
@@ -244,14 +268,6 @@ function createInfoPanelController() {
                     <button type="button" class="menu-btn no-flip" data-panel-view="home" data-i18n="menu.back">戻る</button>
                 </div>
             `;
-        } else if (viewId === 'oss') {
-            back.innerHTML = `
-                <div class="legal-title" data-i18n="menu.oss">オープンソースライセンス</div>
-                <div class="legal-scroll legal-content">${state.legalHtml.oss || '読み込み中...'}</div>
-                <div class="panel-actions">
-                    <button type="button" class="menu-btn no-flip" data-panel-view="home" data-i18n="menu.back">戻る</button>
-                </div>
-            `;
         } else {
             back.innerHTML = `
                 <div class="row">
@@ -264,11 +280,22 @@ function createInfoPanelController() {
                 </div>
                 <div class="row">
                     <div class="label">License</div>
-                    <div class="value">MIT</div>
+                    <div class="value">MIT License</div>
+                </div>
+                <div class="row row-setting no-flip">
+                    <label class="label" for="language-select" data-i18n="setting.language">言語</label>
+                    <div class="value">
+                        <select id="language-select" class="no-flip">
+                            <option value="auto">Auto</option>
+                            <option value="ja">日本語</option>
+                            <option value="en">English</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="menu-list">
                     <button type="button" class="menu-btn no-flip" data-panel-view="settings" data-i18n="menu.settings">設定</button>
-                    <button type="button" class="menu-btn no-flip" data-panel-view="oss" data-i18n="menu.oss">オープンソースライセンス</button>
                     <button type="button" class="menu-btn no-flip panel-close" data-panel-action="close" data-i18n="menu.backToFront">表へ戻る</button>
                 </div>
             `;
@@ -320,29 +347,9 @@ function createInfoPanelController() {
         return html;
     }
 
-    async function fetchLegalMarkdown(fileName) {
-        const candidates = [`./docs/${fileName}`, `docs/${fileName}`];
-        for (const path of candidates) {
-            try {
-                const response = await fetch(path, { cache: 'no-store' });
-                if (response.ok) {
-                    return await response.text();
-                }
-            } catch (e) {
-            }
-        }
-        return '# 読み込みエラー\n\nドキュメントを取得できませんでした。';
-    }
-
-    async function loadLegalDocuments() {
-        const markdown = await fetchLegalMarkdown('open-source-licenses.md');
-        state.legalHtml.oss = renderMarkdownToHtml(markdown);
-
-        syncInfoPanelHeight();
-    }
-
     async function setupInfoPanelInteractions(ctx) {
         const panel = document.getElementById('info-panel');
+        const menuDockButton = document.getElementById('menu-dock-button');
         if (!panel || state.initialized) {
             syncInfoPanelHeight();
             return;
@@ -351,22 +358,34 @@ function createInfoPanelController() {
         state.initialized = true;
         panel.classList.add('panel-2d');
 
-        await loadLegalDocuments();
-
         const openBack = () => {
             panel.classList.add('is-flipped');
             panel.setAttribute('aria-pressed', 'true');
+            updateMenuDockButton(menuDockButton, true);
             renderBackView(ctx, 'home');
         };
 
         const closeBack = () => {
             panel.classList.remove('is-flipped');
             panel.setAttribute('aria-pressed', 'false');
+            updateMenuDockButton(menuDockButton, false);
             syncInfoPanelHeight();
         };
 
         syncInfoPanelHeight();
         window.addEventListener('resize', syncInfoPanelHeight);
+
+        if (menuDockButton) {
+            menuDockButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (panel.classList.contains('is-flipped')) {
+                    closeBack();
+                } else {
+                    openBack();
+                }
+            });
+        }
 
         panel.addEventListener('click', (event) => {
             if (panel.classList.contains('is-flipped')) {
@@ -422,6 +441,7 @@ function createInfoPanelController() {
             }
         });
 
+        updateMenuDockButton(menuDockButton, false);
         applySettingsToUI(ctx);
         syncInfoPanelHeight();
     }

@@ -7,7 +7,7 @@
     .wrap {
         max-width: 720px;
         margin: 24px auto;
-        padding: 0 16px;
+        padding: 0 16px 96px;
     }
 
     canvas {
@@ -116,10 +116,48 @@
         pointer-events: auto;
     }
 
-    .panel-hint {
-        margin-top: 16px;
+    .bottom-menu-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        display: flex;
+        justify-content: center;
+        padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
+        background: #f6f3ee;
+        border-top: 1px solid #dfd9ce;
+    }
+
+    .menu-dock-button {
+        border: none;
+        border-radius: 0;
+        background: transparent;
         color: #6b4b2b;
-        font-size: .9em;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .menu-dock-button:focus-visible {
+        outline: 2px solid #b19a7e;
+        outline-offset: 2px;
+        border-radius: 8px;
+    }
+
+    .menu-dock-icon {
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .menu-dock-label {
+        font-size: 1rem;
+        line-height: 1;
     }
 
     .panel-view {
@@ -296,7 +334,7 @@
         max-width: 900px;
         /* 横並び用に少し広げる */
         margin: 24px auto;
-        padding: 0 16px;
+        padding: 0 16px calc(88px + env(safe-area-inset-bottom));
         /* 横向き時のための Flex 設定 */
         display: flex;
         flex-direction: column;

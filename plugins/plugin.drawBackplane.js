@@ -99,7 +99,7 @@ function drawDialWithAngles(angleMap, r) {
     }
 }
 
-function drawTextAtAngle(text, angle, baseR) {
+function drawTextAtAngle(text, angle, baseR, color) {
     const ctx = Wadokei.ctx;
     const layout = Wadokei.backplane.layout;
     const r = baseR - layout.zodiacRadiusOffset * Wadokei.uiScale;
@@ -109,7 +109,7 @@ function drawTextAtAngle(text, angle, baseR) {
         ctx.rotate(angle);
         ctx.translate(0, -r);
         ctx.font = `${layout.zodiacFontSize * Wadokei.uiScale}px ${layout.zodiacFontFamily}`;
-        ctx.fillStyle = layout.zodiacColor;
+        ctx.fillStyle = color || layout.zodiacColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, 0, 0);
@@ -119,7 +119,7 @@ function drawTextAtAngle(text, angle, baseR) {
 }
 
 // 漢数字（四〜九）を角度位置に描く
-function drawNumberAtAngle(text, angle, baseR) {
+function drawNumberAtAngle(text, angle, baseR, color) {
     const ctx = Wadokei.ctx;
     const layout = Wadokei.backplane.layout;
     const r = baseR - layout.numberRadiusOffset * Wadokei.uiScale;
@@ -129,7 +129,7 @@ function drawNumberAtAngle(text, angle, baseR) {
         ctx.rotate(angle);
         ctx.translate(0, -r);
         ctx.font = `${layout.numberFontSize * Wadokei.uiScale}px ${layout.numberFontFamily}`;
-        ctx.fillStyle = layout.numberColor;
+        ctx.fillStyle = color || layout.numberColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, 0, 0);
@@ -326,9 +326,12 @@ function drawBackplane(ctx, radius, opt = {}) {
             } finally { ctx.restore(); }
         }
 
+        const zodiacTextColor = showDayNight ? Wadokei.backplane.layout.zodiacColor : "#000";
+        const numberTextColor = showDayNight ? Wadokei.backplane.layout.numberColor : "#000";
+
         // 干支
         for (const z in angle) {
-            drawTextAtAngle(z, angle[z], radius);
+            drawTextAtAngle(z, angle[z], radius, zodiacTextColor);
         }
 
         // 漢数字
@@ -343,7 +346,7 @@ function drawBackplane(ctx, radius, opt = {}) {
 
         for (let i = 0; i < 12; i++) {
             const z = zodiacOrder[i];
-            drawNumberAtAngle(clockNumbers[i], angle[z], radius);
+            drawNumberAtAngle(clockNumbers[i], angle[z], radius, numberTextColor);
         }
 
         // 刻線
