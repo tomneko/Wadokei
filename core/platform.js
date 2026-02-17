@@ -11,6 +11,7 @@ const I18N_STRINGS = {
         "value.proprietary": "プロプライエタリ（All rights reserved）",
         "hint.tapMenu": "タップでメニュー",
         "menu.settings": "設定",
+        "menu.displaySettings": "表示設定",
         "menu.oss": "オープンソースライセンス",
         "menu.terms": "利用規約",
         "menu.privacy": "プライバシーポリシー",
@@ -41,6 +42,7 @@ const I18N_STRINGS = {
         "value.proprietary": "Proprietary (All rights reserved)",
         "hint.tapMenu": "Tap to open menu",
         "menu.settings": "Settings",
+        "menu.displaySettings": "Display Settings",
         "menu.oss": "Open Source Licenses",
         "menu.terms": "Terms of Service",
         "menu.privacy": "Privacy Policy",
@@ -71,6 +73,7 @@ const I18N_STRINGS = {
         "value.proprietary": "Propriétaire (All rights reserved)",
         "hint.tapMenu": "Touchez pour ouvrir le menu",
         "menu.settings": "Paramètres",
+        "menu.displaySettings": "Paramètres d’affichage",
         "menu.oss": "Licences Open Source",
         "menu.terms": "Conditions d’utilisation",
         "menu.privacy": "Politique de confidentialité",
@@ -101,6 +104,7 @@ const I18N_STRINGS = {
         "value.proprietary": "Proprietär (All rights reserved)",
         "hint.tapMenu": "Tippen für Menü",
         "menu.settings": "Einstellungen",
+        "menu.displaySettings": "Anzeigeeinstellungen",
         "menu.oss": "Open-Source-Lizenzen",
         "menu.terms": "Nutzungsbedingungen",
         "menu.privacy": "Datenschutzrichtlinie",
@@ -271,10 +275,6 @@ function createInfoPanelController() {
         } else {
             back.innerHTML = `
                 <div class="row">
-                    <div class="label" data-i18n="label.version">バージョン</div>
-                    <div id="app-version" class="value">1.0.0</div>
-                </div>
-                <div class="row">
                     <div class="label" data-i18n="label.copyright">著作権</div>
                     <div class="value">© 2026 Anaheim Technology Inc.</div>
                 </div>
@@ -282,21 +282,8 @@ function createInfoPanelController() {
                     <div class="label">License</div>
                     <div class="value">MIT License</div>
                 </div>
-                <div class="row row-setting no-flip">
-                    <label class="label" for="language-select" data-i18n="setting.language">言語</label>
-                    <div class="value">
-                        <select id="language-select" class="no-flip">
-                            <option value="auto">Auto</option>
-                            <option value="ja">日本語</option>
-                            <option value="en">English</option>
-                            <option value="fr">Français</option>
-                            <option value="de">Deutsch</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="menu-list">
-                    <button type="button" class="menu-btn no-flip" data-panel-view="settings" data-i18n="menu.settings">設定</button>
-                    <button type="button" class="menu-btn no-flip panel-close" data-panel-action="close" data-i18n="menu.backToFront">表へ戻る</button>
+                    <button type="button" class="menu-btn no-flip" data-panel-view="settings" data-i18n="menu.displaySettings">表示設定</button>
                 </div>
             `;
         }
