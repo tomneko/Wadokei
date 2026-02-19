@@ -51,7 +51,3 @@
 - License: SIL Open Font License 1.1
 - URL: https://fonts.google.com/specimen/Long+Cang
 
-## Notes
-
-- 配布時には、各ライセンスの最新版とライセンス本文を確認してください。
-- App Store 提出時は、ライセンス表示（Open Source Licenses）と Privacy Manifest は別要件です。
