@@ -276,7 +276,7 @@ function createInfoPanelController() {
             back.innerHTML = `
                 <div class="row">
                     <div class="label" data-i18n="label.copyright">著作権</div>
-                    <div class="value">© 2026 Anaheim Technology Inc.</div>
+                    <div class="value">© 2026 Tomneko(Hayashi Tsutomu)</div>
                 </div>
                 <div class="row">
                     <div class="label">License</div>
