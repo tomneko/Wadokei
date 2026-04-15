@@ -212,7 +212,6 @@ function drawClock() {
     showDayNight: Wadokei.userSettings?.showDayNight !== false
   });
   const tickShift = bp.shift;
-
   // 針の角度計算
   let now = new Date();
   let seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
@@ -229,7 +228,7 @@ function drawClock() {
     scale: 0.4,
     offsetX: 0,
     offsetY: 0,
-    tickShift: tickShift
+    tickShift: -tickShift
   });
 }
 
