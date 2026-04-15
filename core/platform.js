@@ -19,9 +19,12 @@ const I18N_STRINGS = {
         "menu.backToFront": "表へ戻る",
         "menu.back": "戻る",
         "setting.dayNight": "昼夜区分け",
+        "setting.sekkiMode": "二十四節気モード",
         "setting.language": "言語",
         "state.visible": "表示",
         "state.hidden": "非表示",
+        "state.enabled": "有効",
+        "state.disabled": "無効",
         "legal.oss": "詳細は docs/open-source-licenses.md を参照してください。",
         "legal.terms": "詳細は docs/terms-of-service.md を参照してください。",
         "legal.privacy": "詳細は docs/privacy-policy.md を参照してください。",
@@ -50,9 +53,12 @@ const I18N_STRINGS = {
         "menu.backToFront": "Back to front",
         "menu.back": "Back",
         "setting.dayNight": "Day/Night Segments",
+        "setting.sekkiMode": "24-Solar-Term Mode",
         "setting.language": "Language",
         "state.visible": "Visible",
         "state.hidden": "Hidden",
+        "state.enabled": "Enabled",
+        "state.disabled": "Disabled",
         "legal.oss": "See docs/open-source-licenses.md for details.",
         "legal.terms": "See docs/terms-of-service.md for details.",
         "legal.privacy": "See docs/privacy-policy.md for details.",
@@ -81,9 +87,12 @@ const I18N_STRINGS = {
         "menu.backToFront": "Retour à l’avant",
         "menu.back": "Retour",
         "setting.dayNight": "Segments jour/nuit",
+        "setting.sekkiMode": "Mode des 24 termes",
         "setting.language": "Langue",
         "state.visible": "Afficher",
         "state.hidden": "Masquer",
+        "state.enabled": "Activé",
+        "state.disabled": "Désactivé",
         "legal.oss": "Voir docs/open-source-licenses.md pour les détails.",
         "legal.terms": "Voir docs/terms-of-service.md pour les détails.",
         "legal.privacy": "Voir docs/privacy-policy.md pour les détails.",
@@ -112,9 +121,12 @@ const I18N_STRINGS = {
         "menu.backToFront": "Zur Vorderseite",
         "menu.back": "Zurück",
         "setting.dayNight": "Tag/Nacht-Segmente",
+        "setting.sekkiMode": "24-Sonnenperioden-Modus",
         "setting.language": "Sprache",
         "state.visible": "Anzeigen",
         "state.hidden": "Ausblenden",
+        "state.enabled": "Aktiv",
+        "state.disabled": "Inaktiv",
         "legal.oss": "Details siehe docs/open-source-licenses.md.",
         "legal.terms": "Details siehe docs/terms-of-service.md.",
         "legal.privacy": "Details siehe docs/privacy-policy.md.",
@@ -227,12 +239,22 @@ function createInfoPanelController() {
         const settings = ctx.getSettings();
         const toggle = document.getElementById('show-day-night');
         const toggleLabel = document.getElementById('show-day-night-label');
+        const sekkiFixedToggle = document.getElementById('sekki-fixed-mode');
+        const sekkiFixedLabel = document.getElementById('sekki-fixed-mode-label');
         const languageSelect = document.getElementById('language-select');
 
         if (!toggle) return;
         toggle.checked = settings?.showDayNight !== false;
         if (toggleLabel) {
             toggleLabel.textContent = toggle.checked ? ctx.t('state.visible') : ctx.t('state.hidden');
+        }
+        if (sekkiFixedToggle) {
+            sekkiFixedToggle.checked = settings?.sekkiFixedMode === true;
+        }
+        if (sekkiFixedLabel) {
+            sekkiFixedLabel.textContent = (settings?.sekkiFixedMode === true)
+                ? ctx.t('state.enabled')
+                : ctx.t('state.disabled');
         }
         if (languageSelect) {
             languageSelect.value = settings?.language || 'auto';
@@ -254,6 +276,16 @@ function createInfoPanelController() {
                             <span class="ios-slider"></span>
                         </label>
                         <span id="show-day-night-label">表示</span>
+                    </div>
+                </div>
+                <div class="row row-setting no-flip">
+                    <div class="label" data-i18n="setting.sekkiMode">二十四節気モード</div>
+                    <div class="value setting-value">
+                        <label class="ios-switch no-flip" for="sekki-fixed-mode">
+                            <input id="sekki-fixed-mode" type="checkbox" class="no-flip">
+                            <span class="ios-slider"></span>
+                        </label>
+                        <span id="sekki-fixed-mode-label">無効</span>
                     </div>
                 </div>
                 <div class="row row-setting no-flip">
@@ -412,6 +444,15 @@ function createInfoPanelController() {
 
             if (event.target?.id === 'show-day-night') {
                 ctx.setSettings({ showDayNight: event.target.checked });
+                applySettingsToUI(ctx);
+                await ctx.saveSettings();
+                ctx.redraw();
+                syncInfoPanelHeight();
+                return;
+            }
+
+            if (event.target?.id === 'sekki-fixed-mode') {
+                ctx.setSettings({ sekkiFixedMode: event.target.checked });
                 applySettingsToUI(ctx);
                 await ctx.saveSettings();
                 ctx.redraw();

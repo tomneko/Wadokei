@@ -49,7 +49,8 @@ window.Wadokei = {
 const SETTINGS_KEY = "wadokei.settings.v1";
 const DEFAULT_USER_SETTINGS = {
   showDayNight: true,
-  language: "auto"
+  language: "auto",
+  sekkiFixedMode: false
 };
 
 function t(key, params = {}) {
@@ -107,6 +108,26 @@ function getCurrentDateTime() {
   return new Date();
 }
 
+function getSunCalcAnchorDate(nowTime) {
+  if (Wadokei.userSettings?.sekkiFixedMode === true) {
+    const sekki = getSekki(nowTime);
+    if (sekki?.start instanceof Date) {
+      return sekki.start;
+    }
+  }
+  return nowTime;
+}
+
+function getSunCalcStateKey(nowTime) {
+  if (Wadokei.userSettings?.sekkiFixedMode === true) {
+    const sekki = getSekki(nowTime);
+    const idx = sekki?.index ?? "unknown";
+    const start = sekki?.start instanceof Date ? sekki.start : nowTime;
+    return `sekki:${idx}:${start.getFullYear()}-${start.getMonth() + 1}-${start.getDate()}`;
+  }
+  return `daily:${nowTime.toDateString()}`;
+}
+
 /* 和時計初期化
   * config: 設定オブジェクト
   * consts: 定数オブジェクト
@@ -125,8 +146,10 @@ async function InitWadokei(config, consts) {
     Wadokei.consts.pluginRsrcsDir = WadokeiLocal.pluginDir + '/rsrcs/';
   }
 
-  Wadokei.sun = ComputeSunData(getCurrentDateTime());
   Wadokei.userSettings = await loadUserSettings();
+  const nowTime = getCurrentDateTime();
+  Wadokei.sun = ComputeSunData(getSunCalcAnchorDate(nowTime));
+  Wadokei.state.lastSunCalcKey = getSunCalcStateKey(nowTime);
   window.WadokeiPlatform?.refreshLocale?.(Wadokei.userSettings);
   window.WadokeiPlatform?.applyTranslations?.();
   if (window.WadokeiPlatform?.setupInfoPanelInteractions) {
@@ -359,11 +382,10 @@ function draw() {
 
   // 日の出・日の入り再計算（1日1回実行）
   const nowTime = getCurrentDateTime();
-  const today = nowTime.toDateString();
-
-  if (Wadokei.state.lastSunCalcDate !== today) {
-    Wadokei.sun = ComputeSunData(nowTime);
-    Wadokei.state.lastSunCalcDate = today;
+  const sunCalcKey = getSunCalcStateKey(nowTime);
+  if (Wadokei.state.lastSunCalcKey !== sunCalcKey) {
+    Wadokei.sun = ComputeSunData(getSunCalcAnchorDate(nowTime));
+    Wadokei.state.lastSunCalcKey = sunCalcKey;
   }
 
   // 描画処理引数は全てWadokeiから取得
@@ -522,7 +544,7 @@ function drawInfoPanel(nowTime) {
   // 24節気判定（terms.js の getSekki を使用）
   const sekki = getSekki(nowTime);
   const sekkiHeader = t("sekki.prefix", { index: sekki.index, name: sekki.name });
-  $sekki.innerText = `${sekkiHeader}\n${t("sun.sunrise")}: ${sunriseStr} ${t("sun.ake")}: ${akeStr}\n${t("sun.sunset")}: ${sunsetStr} ${t("sun.kure")}: ${kureStr}`;
+  $sekki.innerText = `${sekkiHeader}\n${t("sun.sunrise")}: ${sunriseStr}\n${t("sun.ake")}: ${akeStr}\n${t("sun.sunset")}: ${sunsetStr}\n${t("sun.kure")}: ${kureStr}`;
 
   syncInfoPanelHeight();
 
