@@ -1,7 +1,7 @@
 {
     "lat": 35.685175,
     "lon": 139.752799,
-    "demoMode": true,
+    "demoMode": false,
     "demoDateTime": "2026/4/15 04:36:00",
     "dialMode": "午上",
     "calMode": "宣明暦",
