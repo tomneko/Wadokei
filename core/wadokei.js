@@ -39,7 +39,11 @@ window.Wadokei = {
   sun: {},
   state: {},
   hand: {},
-  backplane: {}
+  backplane: {},
+  demo: {
+    enabled: false,
+    fixedDate: null
+  }
 };
 
 const SETTINGS_KEY = "wadokei.settings.v1";
@@ -60,6 +64,49 @@ function applyTranslations() {
   window.WadokeiPlatform?.applyTranslations?.();
 }
 
+function parseDemoDateTime(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  // Accept "YYYY/MM/DD HH:mm:ss" and "YYYY-MM-DD HH:mm:ss"
+  const m = value.trim().match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+  if (!m) {
+    return null;
+  }
+
+  const year = Number(m[1]);
+  const month = Number(m[2]) - 1;
+  const day = Number(m[3]);
+  const hour = Number(m[4] ?? 0);
+  const minute = Number(m[5] ?? 0);
+  const second = Number(m[6] ?? 0);
+  const dt = new Date(year, month, day, hour, minute, second, 0);
+
+  if (Number.isNaN(dt.getTime())) {
+    return null;
+  }
+  return dt;
+}
+
+function initDemoClock(config) {
+  const enabled = config?.demoMode === true;
+  const fixedDate = enabled ? parseDemoDateTime(config?.demoDateTime) : null;
+  Wadokei.demo.enabled = enabled && !!fixedDate;
+  Wadokei.demo.fixedDate = fixedDate;
+
+  if (enabled && !fixedDate) {
+    console.warn("⚠️ demoMode is enabled but demoDateTime is invalid. Falling back to realtime clock.");
+  }
+}
+
+function getCurrentDateTime() {
+  if (Wadokei.demo.enabled && Wadokei.demo.fixedDate) {
+    return new Date(Wadokei.demo.fixedDate.getTime());
+  }
+  return new Date();
+}
+
 /* 和時計初期化
   * config: 設定オブジェクト
   * consts: 定数オブジェクト
@@ -70,6 +117,7 @@ async function InitWadokei(config, consts) {
 
   Wadokei.consts = { ...consts };
   Wadokei.config = { ...config };
+  initDemoClock(Wadokei.config);
 
   if (typeof WadokeiLocal !== 'undefined' && WadokeiLocal !== null) {
     Wadokei.consts.coreDir = WadokeiLocal.coreDir;
@@ -77,7 +125,7 @@ async function InitWadokei(config, consts) {
     Wadokei.consts.pluginRsrcsDir = WadokeiLocal.pluginDir + '/rsrcs/';
   }
 
-  Wadokei.sun = ComputeSunData(new Date());
+  Wadokei.sun = ComputeSunData(getCurrentDateTime());
   Wadokei.userSettings = await loadUserSettings();
   window.WadokeiPlatform?.refreshLocale?.(Wadokei.userSettings);
   window.WadokeiPlatform?.applyTranslations?.();
@@ -159,7 +207,7 @@ Promise.allSettled(loadTasks)
 
 /* 和時計描画
   */
-function drawClock() {
+function drawClock(nowTime) {
   const { dialMode, calMode, lat, lon } = Wadokei.config;
   const { sunrise, sunset, Lday, trueNoon } = Wadokei.sun;
   const ctx = Wadokei.ctx;
@@ -213,8 +261,7 @@ function drawClock() {
   });
   const tickShift = bp.shift;
   // 針の角度計算
-  let now = new Date();
-  let seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  let seconds = nowTime.getHours() * 3600 + nowTime.getMinutes() * 60 + nowTime.getSeconds();
   let angle = (seconds / 86400) * 2 * Math.PI;
 
   if (dialMode === "午上") {
@@ -311,7 +358,7 @@ function draw() {
   // console.log(`UI Scale: ${Wadokei.uiScale}`);
 
   // 日の出・日の入り再計算（1日1回実行）
-  const nowTime = new Date();
+  const nowTime = getCurrentDateTime();
   const today = nowTime.toDateString();
 
   if (Wadokei.state.lastSunCalcDate !== today) {
@@ -320,7 +367,7 @@ function draw() {
   }
 
   // 描画処理引数は全てWadokeiから取得
-  drawClock();
+  drawClock(nowTime);
 
   // 情報パネル更新
   drawInfoPanel(nowTime);
