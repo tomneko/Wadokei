@@ -220,6 +220,7 @@ function createInfoPanelController() {
         const label = menuDockButton.querySelector('.menu-dock-label');
         const icon = menuDockButton.querySelector('.menu-dock-icon');
         const labelKey = isBackVisible ? 'menu.back' : 'menu.settings';
+        const settingsIcon = '<img src="icons/settings_48dp_1E1E1E_FILL0_wght400_GRAD0_opsz48.svg" alt="" loading="eager" decoding="async">';
 
         if (label) {
             label.setAttribute('data-i18n', labelKey);
@@ -231,8 +232,8 @@ function createInfoPanelController() {
                 icon.classList.remove('material-symbols-outlined');
                 icon.textContent = '↩︎';
             } else {
-                icon.classList.add('material-symbols-outlined');
-                icon.textContent = 'settings';
+                icon.classList.remove('material-symbols-outlined');
+                icon.innerHTML = settingsIcon;
             }
         }
 
