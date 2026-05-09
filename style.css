@@ -151,7 +151,14 @@
     }
 
     .menu-dock-icon {
-        font-size: 1.15rem;
+        font-size: 1.3rem;
+        font-family: system-ui, "Apple Symbols", "Segoe UI Symbol", sans-serif;
+        font-variation-settings: normal;
+        font-weight: 400;
+        font-style: normal;
+        font-feature-settings: normal;
+        display: inline-flex;
+        align-items: center;
         line-height: 1;
     }
 

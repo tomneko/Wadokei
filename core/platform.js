@@ -19,6 +19,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "表へ戻る",
         "menu.back": "戻る",
         "setting.dayNight": "昼夜区分け",
+        "setting.kanseiCorrection": "寛政暦補正",
         "setting.sekkiMode": "二十四節気モード",
         "setting.language": "言語",
         "state.visible": "表示",
@@ -53,6 +54,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "Back to front",
         "menu.back": "Back",
         "setting.dayNight": "Day/Night Segments",
+        "setting.kanseiCorrection": "Kansei Calendar Correction",
         "setting.sekkiMode": "24-Solar-Term Mode",
         "setting.language": "Language",
         "state.visible": "Visible",
@@ -87,6 +89,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "Retour à l’avant",
         "menu.back": "Retour",
         "setting.dayNight": "Segments jour/nuit",
+        "setting.kanseiCorrection": "Correction du calendrier Kansei",
         "setting.sekkiMode": "Mode des 24 termes",
         "setting.language": "Langue",
         "state.visible": "Afficher",
@@ -121,6 +124,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "Zur Vorderseite",
         "menu.back": "Zurück",
         "setting.dayNight": "Tag/Nacht-Segmente",
+        "setting.kanseiCorrection": "Kansei-Kalenderkorrektur",
         "setting.sekkiMode": "24-Sonnenperioden-Modus",
         "setting.language": "Sprache",
         "state.visible": "Anzeigen",
@@ -241,6 +245,8 @@ function createInfoPanelController() {
         const toggleLabel = document.getElementById('show-day-night-label');
         const sekkiFixedToggle = document.getElementById('sekki-fixed-mode');
         const sekkiFixedLabel = document.getElementById('sekki-fixed-mode-label');
+        const kanseiCorrectionToggle = document.getElementById('kansei-correction');
+        const kanseiCorrectionLabel = document.getElementById('kansei-correction-label');
         const languageSelect = document.getElementById('language-select');
 
         if (!toggle) return;
@@ -253,6 +259,14 @@ function createInfoPanelController() {
         }
         if (sekkiFixedLabel) {
             sekkiFixedLabel.textContent = (settings?.sekkiFixedMode === true)
+                ? ctx.t('state.enabled')
+                : ctx.t('state.disabled');
+        }
+        if (kanseiCorrectionToggle) {
+            kanseiCorrectionToggle.checked = settings?.kanseiCorrection !== false;
+        }
+        if (kanseiCorrectionLabel) {
+            kanseiCorrectionLabel.textContent = (settings?.kanseiCorrection !== false)
                 ? ctx.t('state.enabled')
                 : ctx.t('state.disabled');
         }
@@ -276,6 +290,16 @@ function createInfoPanelController() {
                             <span class="ios-slider"></span>
                         </label>
                         <span id="show-day-night-label">表示</span>
+                    </div>
+                </div>
+                <div class="row row-setting no-flip">
+                    <div class="label" data-i18n="setting.kanseiCorrection">寛政暦補正</div>
+                    <div class="value setting-value">
+                        <label class="ios-switch no-flip" for="kansei-correction">
+                            <input id="kansei-correction" type="checkbox" class="no-flip" checked>
+                            <span class="ios-slider"></span>
+                        </label>
+                        <span id="kansei-correction-label">有効</span>
                     </div>
                 </div>
                 <div class="row row-setting no-flip">
@@ -453,6 +477,15 @@ function createInfoPanelController() {
 
             if (event.target?.id === 'sekki-fixed-mode') {
                 ctx.setSettings({ sekkiFixedMode: event.target.checked });
+                applySettingsToUI(ctx);
+                await ctx.saveSettings();
+                ctx.redraw();
+                syncInfoPanelHeight();
+                return;
+            }
+
+            if (event.target?.id === 'kansei-correction') {
+                ctx.setSettings({ kanseiCorrection: event.target.checked });
                 applySettingsToUI(ctx);
                 await ctx.saveSettings();
                 ctx.redraw();

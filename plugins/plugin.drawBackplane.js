@@ -154,19 +154,18 @@ function drawTickAtAngle(angle, r1, r2) {
 }
 
 function drawBackplane(ctx, radius, opt = {}) {
-    const { showDayNight = true } = opt;
+    const { showDayNight = true, kanseiCorrection = true } = opt;
     const { dialMode, lat, lon } = Wadokei.config;
     const { sunrise, sunset, ake, kure } = Wadokei.sun;
 
     drawBackground(ctx, radius); // ← ここで背景を描画
 
-    // 卯の正刻（明け六つ）
-    const tU = ake;
+    // 卯/酉の正刻。寛政暦補正OFFでは日の出/日の入りで盤面全体を構成する。
+    const tU = kanseiCorrection ? ake : sunrise;
 
-    // 酉の正刻（暮れ六つ）
-    const tY = kure;
+    const tY = kanseiCorrection ? kure : sunset;
 
-    // 昼の長さ（寛政暦補正後）
+    // 昼の長さ
     const rDay = (tY - tU) / (24 * 3600 * 1000);
     const thetaDay = rDay * 2 * Math.PI;
 
@@ -296,6 +295,11 @@ function drawBackplane(ctx, radius, opt = {}) {
 
     const angleU2 = angle["卯"];
     const angleY2 = angle["酉"];
+    let dayNightStartAngle = angleU2;
+    let dayNightEndAngle = angleY2;
+    while (dayNightEndAngle <= dayNightStartAngle) {
+        dayNightEndAngle += 2 * Math.PI;
+    }
 
     // -----------------------------
     // 描画
@@ -309,7 +313,7 @@ function drawBackplane(ctx, radius, opt = {}) {
                 ctx.rotate(-Math.PI / 2);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.arc(0, 0, radius - 10, angleU2, angleY2);
+                ctx.arc(0, 0, radius - 10, dayNightStartAngle, dayNightEndAngle);
                 ctx.fillStyle = "rgba(255, 248, 220, 0.6)";
                 ctx.fill();
             } finally { ctx.restore(); }
@@ -320,7 +324,7 @@ function drawBackplane(ctx, radius, opt = {}) {
                 ctx.rotate(-Math.PI / 2);
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
-                ctx.arc(0, 0, radius - 10, angleY2, angleU2 + 2 * Math.PI);
+                ctx.arc(0, 0, radius - 10, dayNightEndAngle, dayNightStartAngle + 2 * Math.PI);
                 ctx.fillStyle = "rgba(230, 240, 255, 0.6)";
                 ctx.fill();
             } finally { ctx.restore(); }

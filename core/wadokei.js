@@ -50,7 +50,8 @@ const SETTINGS_KEY = "wadokei.settings.v1";
 const DEFAULT_USER_SETTINGS = {
   showDayNight: true,
   language: "auto",
-  sekkiFixedMode: false
+  sekkiFixedMode: false,
+  kanseiCorrection: true
 };
 
 function t(key, params = {}) {
@@ -91,12 +92,32 @@ function parseDemoDateTime(value) {
 }
 
 function initDemoClock(config) {
-  const enabled = config?.demoMode === true;
-  const fixedDate = enabled ? parseDemoDateTime(config?.demoDateTime) : null;
-  Wadokei.demo.enabled = enabled && !!fixedDate;
+  const normalizeDemoMode = (rawMode) => {
+    if (rawMode === true) return 2;
+    if (rawMode === false || rawMode == null) return 1;
+    const mode = Number(rawMode);
+    return [1, 2, 3].includes(mode) ? mode : 1;
+  };
+
+  const mode = normalizeDemoMode(config?.demoMode);
+  const fixedRaw = parseDemoDateTime(config?.demoDateTime);
+  const fixedDate = [2, 3].includes(mode) ? fixedRaw : null;
+
+  if (mode === 3 && fixedDate) {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    const base = new Date(fixedDate.getTime());
+    base.setSeconds(0, 0);
+    const elapsed = ((now.getTime() - base.getTime()) % (5 * 60 * 1000) + (5 * 60 * 1000)) % (5 * 60 * 1000);
+    Wadokei.demo.enabled = true;
+    Wadokei.demo.fixedDate = new Date(base.getTime() + elapsed);
+    return;
+  }
+
+  Wadokei.demo.enabled = mode === 2 && !!fixedDate;
   Wadokei.demo.fixedDate = fixedDate;
 
-  if (enabled && !fixedDate) {
+  if (mode > 1 && !fixedDate) {
     console.warn("⚠️ demoMode is enabled but demoDateTime is invalid. Falling back to realtime clock.");
   }
 }
@@ -232,7 +253,7 @@ Promise.allSettled(loadTasks)
   */
 function drawClock(nowTime) {
   const { dialMode, calMode, lat, lon } = Wadokei.config;
-  const { sunrise, sunset, Lday, trueNoon } = Wadokei.sun;
+  const { sunrise, sunset, ake, kure, Lday, trueNoon } = Wadokei.sun;
   const ctx = Wadokei.ctx;
   const radius = Wadokei.radius;
   const canvas = Wadokei.canvas;
@@ -250,15 +271,18 @@ function drawClock(nowTime) {
   // 透明度リセット
   ctx.globalAlpha = 1.0;
 
-  // 昼夜長の計算
-  let dayLength = sunset - sunrise;
-  let nightLength = (sunrise + 24 * 3600 * 1000) - sunset;
+  // 寛政暦補正OFFでは、卯/酉の正刻を日の出/日の入りとして盤面を構成する。
+  const useKanseiCorrection = Wadokei.userSettings?.kanseiCorrection !== false;
+  const dayStart = useKanseiCorrection ? ake : sunrise;
+  const dayEnd = useKanseiCorrection ? kure : sunset;
+  let dayLength = dayEnd - dayStart;
+  let nightLength = (dayStart + 24 * 3600 * 1000) - dayEnd;
 
   let dayAngle = (dayLength / (dayLength + nightLength)) * 2 * Math.PI;
   let nightAngle = 2 * Math.PI - dayAngle;
 
-  // sunrise は number（ミリ秒）なので Date に戻す
-  let sunriseDate = new Date(sunrise);
+  // dayStart は number（ミリ秒）なので Date に戻す
+  let sunriseDate = new Date(dayStart);
 
   // 今日の0時から日の出までの秒数
   let sunriseSec =
@@ -280,7 +304,8 @@ function drawClock(nowTime) {
     dialMode,
     sunrise,
     sunset,
-    showDayNight: Wadokei.userSettings?.showDayNight !== false
+    showDayNight: Wadokei.userSettings?.showDayNight !== false,
+    kanseiCorrection: useKanseiCorrection
   });
   const tickShift = bp.shift;
   // 針の角度計算
@@ -466,7 +491,8 @@ async function loadUserSettings() {
     return {
       ...DEFAULT_USER_SETTINGS,
       ...parsed,
-      showDayNight: parsed.showDayNight !== false
+      showDayNight: parsed.showDayNight !== false,
+      kanseiCorrection: parsed.kanseiCorrection !== false
     };
   } catch (e) {
     console.warn("⚠️ Invalid settings payload. Using defaults.", e);
