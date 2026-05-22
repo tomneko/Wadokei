@@ -41,6 +41,8 @@ function InitDrawBackplane(config) {
         // 刻線の内外位置（radius からの距離）
         tickOuter: 60,
         tickInner: 20,
+        quarterTickOuter: 32,
+        quarterTickInner: 20,
 
         // 干支の文字設定
         zodiacFontSize: 40,
@@ -154,7 +156,7 @@ function drawTickAtAngle(angle, r1, r2) {
 }
 
 function drawBackplane(ctx, radius, opt = {}) {
-    const { showDayNight = true, kanseiCorrection = true } = opt;
+    const { showDayNight = true, kanseiCorrection = true, showQuarterKokuLines = false } = opt;
     const { dialMode, lat, lon } = Wadokei.config;
     const { sunrise, sunset, ake, kure } = Wadokei.sun;
 
@@ -234,6 +236,11 @@ function drawBackplane(ctx, radius, opt = {}) {
     function mid(a, b) {
         let d = (b - a + 2 * Math.PI) % (2 * Math.PI);
         return (a + d / 2) % (2 * Math.PI);
+    }
+
+    function angleBetween(a, b, ratio) {
+        const d = (b - a + 2 * Math.PI) % (2 * Math.PI);
+        return (a + d * ratio) % (2 * Math.PI);
     }
 
     const angleTick = [];
@@ -347,10 +354,38 @@ function drawBackplane(ctx, radius, opt = {}) {
             "六", "五", "四", "九", "八", "七",
             "六", "五", "四", "九", "八", "七"
         ];
-
         for (let i = 0; i < 12; i++) {
             const z = zodiacOrder[i];
             drawNumberAtAngle(clockNumbers[i], angle[z], radius, numberTextColor);
+        }
+
+        if (showQuarterKokuLines) {
+            const angleQuarterTick = [];
+
+            for (let i = 0; i < 12; i++) {
+                const prev = zodiacOrder[(i + 11) % 12];
+                const z = zodiacOrder[i];
+                const next = zodiacOrder[(i + 1) % 12];
+                const start = mid(angle[prev], angle[z]);
+                const end = mid(angle[z], angle[next]);
+
+                angleQuarterTick.push(angleBetween(start, angle[z], 0.5));
+                angleQuarterTick.push(angleBetween(angle[z], end, 0.5));
+            }
+
+            ctx.save();
+            try {
+                ctx.strokeStyle = showDayNight ? "rgba(54, 33, 18, 0.65)" : "rgba(0, 0, 0, 0.7)";
+                ctx.lineWidth = Math.max(1, 1.15 * Wadokei.uiScale);
+                for (const a of angleQuarterTick) {
+                    drawTickAtAngle(a,
+                        radius - Wadokei.backplane.layout.quarterTickOuter * Wadokei.uiScale,
+                        radius - Wadokei.backplane.layout.quarterTickInner * Wadokei.uiScale
+                    );
+                }
+            } finally {
+                ctx.restore();
+            }
         }
 
         // 刻線

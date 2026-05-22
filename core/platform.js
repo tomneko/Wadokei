@@ -19,6 +19,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "表へ戻る",
         "menu.back": "戻る",
         "setting.dayNight": "昼夜区分け",
+        "setting.quarterKokuLines": "四半刻線",
         "setting.kanseiCorrection": "寛政暦補正",
         "setting.sekkiMode": "二十四節気モード",
         "setting.language": "言語",
@@ -54,6 +55,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "Back to front",
         "menu.back": "Back",
         "setting.dayNight": "Day/Night Segments",
+        "setting.quarterKokuLines": "Quarter-koku Lines",
         "setting.kanseiCorrection": "Kansei Calendar Correction",
         "setting.sekkiMode": "24-Solar-Term Mode",
         "setting.language": "Language",
@@ -89,6 +91,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "Retour à l’avant",
         "menu.back": "Retour",
         "setting.dayNight": "Segments jour/nuit",
+        "setting.quarterKokuLines": "Repères de quart de koku",
         "setting.kanseiCorrection": "Correction du calendrier Kansei",
         "setting.sekkiMode": "Mode des 24 termes",
         "setting.language": "Langue",
@@ -124,6 +127,7 @@ const I18N_STRINGS = {
         "menu.backToFront": "Zur Vorderseite",
         "menu.back": "Zurück",
         "setting.dayNight": "Tag/Nacht-Segmente",
+        "setting.quarterKokuLines": "Viertel-Koku-Linien",
         "setting.kanseiCorrection": "Kansei-Kalenderkorrektur",
         "setting.sekkiMode": "24-Sonnenperioden-Modus",
         "setting.language": "Sprache",
@@ -244,6 +248,8 @@ function createInfoPanelController() {
         const settings = ctx.getSettings();
         const toggle = document.getElementById('show-day-night');
         const toggleLabel = document.getElementById('show-day-night-label');
+        const quarterKokuLinesToggle = document.getElementById('quarter-koku-lines');
+        const quarterKokuLinesLabel = document.getElementById('quarter-koku-lines-label');
         const sekkiFixedToggle = document.getElementById('sekki-fixed-mode');
         const sekkiFixedLabel = document.getElementById('sekki-fixed-mode-label');
         const kanseiCorrectionToggle = document.getElementById('kansei-correction');
@@ -254,6 +260,14 @@ function createInfoPanelController() {
         toggle.checked = settings?.showDayNight !== false;
         if (toggleLabel) {
             toggleLabel.textContent = toggle.checked ? ctx.t('state.visible') : ctx.t('state.hidden');
+        }
+        if (quarterKokuLinesToggle) {
+            quarterKokuLinesToggle.checked = settings?.showQuarterKokuLines === true;
+        }
+        if (quarterKokuLinesLabel) {
+            quarterKokuLinesLabel.textContent = (settings?.showQuarterKokuLines === true)
+                ? ctx.t('state.visible')
+                : ctx.t('state.hidden');
         }
         if (sekkiFixedToggle) {
             sekkiFixedToggle.checked = settings?.sekkiFixedMode === true;
@@ -291,6 +305,16 @@ function createInfoPanelController() {
                             <span class="ios-slider"></span>
                         </label>
                         <span id="show-day-night-label">表示</span>
+                    </div>
+                </div>
+                <div class="row row-setting no-flip">
+                    <div class="label" data-i18n="setting.quarterKokuLines">四半刻線</div>
+                    <div class="value setting-value">
+                        <label class="ios-switch no-flip" for="quarter-koku-lines">
+                            <input id="quarter-koku-lines" type="checkbox" class="no-flip">
+                            <span class="ios-slider"></span>
+                        </label>
+                        <span id="quarter-koku-lines-label">非表示</span>
                     </div>
                 </div>
                 <div class="row row-setting no-flip">
@@ -469,6 +493,15 @@ function createInfoPanelController() {
 
             if (event.target?.id === 'show-day-night') {
                 ctx.setSettings({ showDayNight: event.target.checked });
+                applySettingsToUI(ctx);
+                await ctx.saveSettings();
+                ctx.redraw();
+                syncInfoPanelHeight();
+                return;
+            }
+
+            if (event.target?.id === 'quarter-koku-lines') {
+                ctx.setSettings({ showQuarterKokuLines: event.target.checked });
                 applySettingsToUI(ctx);
                 await ctx.saveSettings();
                 ctx.redraw();

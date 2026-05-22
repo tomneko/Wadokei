@@ -51,7 +51,8 @@ const DEFAULT_USER_SETTINGS = {
   showDayNight: true,
   language: "auto",
   sekkiFixedMode: false,
-  kanseiCorrection: true
+  kanseiCorrection: true,
+  showQuarterKokuLines: false
 };
 
 function t(key, params = {}) {
@@ -305,7 +306,8 @@ function drawClock(nowTime) {
     sunrise,
     sunset,
     showDayNight: Wadokei.userSettings?.showDayNight !== false,
-    kanseiCorrection: useKanseiCorrection
+    kanseiCorrection: useKanseiCorrection,
+    showQuarterKokuLines: Wadokei.userSettings?.showQuarterKokuLines === true
   });
   const tickShift = bp.shift;
   // 針の角度計算
@@ -492,7 +494,8 @@ async function loadUserSettings() {
       ...DEFAULT_USER_SETTINGS,
       ...parsed,
       showDayNight: parsed.showDayNight !== false,
-      kanseiCorrection: parsed.kanseiCorrection !== false
+      kanseiCorrection: parsed.kanseiCorrection !== false,
+      showQuarterKokuLines: parsed.showQuarterKokuLines === true
     };
   } catch (e) {
     console.warn("⚠️ Invalid settings payload. Using defaults.", e);
